@@ -81,6 +81,17 @@ CHATTERBOX_VOICE = os.environ.get("CHATTERBOX_VOICE", "Adrian.wav")
 # appel de plusieurs dizaines de minutes à la dernière minute.
 CHATTERBOX_TIMEOUT_S = float(os.environ.get("CHATTERBOX_TIMEOUT_S", "7200"))
 
+# Le serveur ne renvoie AUCUNE erreur quand on lui demande une langue que le
+# modèle chargé ne sait pas faire : il « réussit » silencieusement, dans la
+# mauvaise langue (constaté à l'écoute — un script français lu en anglais,
+# vérifié après coup : Chatterbox Turbo est anglais seul, le multilingue est
+# un modèle distinct, jamais chargé sur ce serveur). Pas d'erreur serveur à
+# intercepter, donc le garde-fou est ici : les langues que le modèle
+# actuellement chargé sait vraiment faire, à mettre à jour si le modèle change.
+CHATTERBOX_LANGUAGES = frozenset(
+    os.environ.get("CHATTERBOX_LANGUAGES", "en").split(",")
+)
+
 
 def _seed_for_project(project_id: str) -> int:
     """Même construction que `scenes.seed_for` : déterministe, pas `hash()`."""
@@ -121,6 +132,16 @@ def _run_piper(project: Project, language: LanguageConfig, text: str) -> None:
 
 def _run_chatterbox(project: Project, language: LanguageConfig, text: str) -> None:
     import httpx
+
+    if language.whisper not in CHATTERBOX_LANGUAGES:
+        raise RuntimeError(
+            f"le modèle Chatterbox actuellement chargé ne fait que "
+            f"{sorted(CHATTERBOX_LANGUAGES)}, pas '{language.whisper}'. Le serveur "
+            f"ne signale pas cette incompatibilité lui-même — il génère de "
+            f"l'audio dans la mauvaise langue sans erreur. Charger un modèle "
+            f"multilingue et mettre à jour CHATTERBOX_LANGUAGES, ou repasser "
+            f"sur Piper pour ce projet (PIPELINE_TTS_PROVIDER=piper)."
+        )
 
     # `language.whisper` est déjà un code ISO 639-1 (fr, en) — le même que le
     # serveur Chatterbox attend, testé directement (SPEC : une seule
