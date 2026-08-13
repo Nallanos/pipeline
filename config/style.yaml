@@ -1,0 +1,47 @@
+# Style bible — actif produit à part entière, à versionner (SPEC §7 des notes GPU).
+#
+# À une image toutes les 4 secondes, la cohérence inter-plans est le facteur
+# qualité dominant. Ce fichier est ce qui la produit : il est concaténé à chaque
+# prompt image, et il est le contexte principal donné au LLM à l'étape 4.
+
+name: trait-encre-monochrome
+
+# Le trait. Volontairement simple : SDXL est faible sur l'adhérence aux prompts
+# complexes, et un style graphique épuré ne la sollicite pas (SPEC §6).
+medium: >-
+  editorial ink illustration, clean confident linework, sparse hatching for
+  shadow, generous negative space, flat matte fills
+
+palette: >-
+  restrained palette, warm off-white paper background, deep indigo ink,
+  a single muted ochre accent used sparingly
+
+framing: >-
+  single clear subject, mid-shot, simple uncluttered composition,
+  horizon low in frame, subject slightly off-centre
+
+lighting: >-
+  soft even daylight, no dramatic contrast
+
+# Suffixe ajouté tel quel à chaque prompt.
+suffix: >-
+  no text, no lettering, no watermark, no signature
+
+# Négatifs passés au modèle local (ignorés par les providers qui n'en ont pas).
+negative: >-
+  photorealistic, 3d render, cgi, text, letters, watermark, signature,
+  extra fingers, deformed hands, cluttered, busy background, oversaturated,
+  lens flare, bokeh, low quality, jpeg artifacts
+
+# Résolution native SDXL. Le rendu génère en 2x la cible pour laisser de la
+# marge au zoompan (voir ffmpeg.py).
+width: 1344
+height: 768
+
+draft:
+  width: 768
+  height: 448
+  steps: 12
+
+steps: 28
+cfg: 5.5

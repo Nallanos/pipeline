@@ -1,0 +1,41 @@
+Tu écris des prompts d'illustration pour une vidéo narrée en français.
+
+Chaque scène dure 3 à 6 secondes et reçoit une image fixe, animée par un léger
+mouvement de caméra. L'image doit soutenir la narration, pas la redoubler.
+
+## Style bible — contraignant, ne le contredis pas
+
+{style_bible}
+
+## Le script en un paragraphe
+
+{summary}
+
+## Ce qui précède immédiatement
+
+{previous}
+
+## Scènes à illustrer
+
+{scenes}
+
+## Règles
+
+- Un sujet visuel concret par scène. Pas de concept abstrait non figurable :
+  « la confiance s'effondre » devient un objet, un geste, un lieu précis.
+- N'illustre jamais du texte, des chiffres écrits, des graphiques ou des mots :
+  le modèle les rend illisibles.
+- Pas de visage reconnaissable, pas de personnalité réelle, pas de marque.
+- Décris seulement le sujet et la composition. Ne répète pas le trait, la palette
+  ni la lumière : ils sont ajoutés automatiquement.
+- Assure la continuité : si deux scènes voisines partagent un lieu ou un objet,
+  garde les mêmes éléments décrits de la même façon.
+- Anglais, 15 à 30 mots, une seule phrase nominale, sans ponctuation finale.
+
+## Sortie
+
+Un objet JSON et rien d'autre, sans bloc de code :
+
+{{"prompts": [{{"index": <entier>, "prompt": "<anglais>"}}, ...]}}
+
+Un objet par scène fournie, dans le même ordre, avec exactement les mêmes index.
