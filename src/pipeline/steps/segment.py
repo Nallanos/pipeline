@@ -16,6 +16,7 @@ import json
 from .. import scenes as scenes_mod
 from ..alignment import Alignment
 from ..boundaries import Candidate, detect, pause_thresholds, score_histogram
+from ..language import for_project
 from ..project import Options, Project, write_atomic
 from ..scenes import Scene
 
@@ -58,9 +59,13 @@ def _pick(
     return min(forced_pool, key=lambda c: abs(c.cut_ms - target)), True
 
 
-def build_scenes(alignment: Alignment, project_id: str) -> list[Scene]:
+def build_scenes(
+    alignment: Alignment,
+    project_id: str,
+    connectives: frozenset[str] = frozenset(),
+) -> list[Scene]:
     """Le parcours glouton du §4.3.b. Fonction pure, testable sans E/S."""
-    candidates = detect(alignment)
+    candidates = detect(alignment, connectives)
     words = alignment.words
     built: list[Scene] = []
     word_cursor = 0
@@ -115,7 +120,8 @@ def run(project: Project, opts: Options) -> None:
     alignment = Alignment.load(project.alignment)
     script_normalized = project.script_normalized.read_text(encoding="utf-8")
 
-    candidates = detect(alignment)
+    language = for_project(project.dir)
+    candidates = detect(alignment, language.connectives)
     write_atomic(
         project.boundaries,
         json.dumps(
@@ -135,11 +141,11 @@ def run(project: Project, opts: Options) -> None:
         ),
     )
 
-    built = build_scenes(alignment, project.id)
+    built = build_scenes(alignment, project.id, language.connectives)
     scenes_mod.check_invariant_b(built, script_normalized)
     scenes_mod.save(project.scenes, built)
 
     pause_long, pause_short = pause_thresholds(alignment)
-    print(f"  seuils de pause : {pause_short} / {pause_long} ms")
+    print(f"  langue '{language.code}' — seuils de pause : {pause_short} / {pause_long} ms")
     print(f"  {score_histogram(candidates)}")
     print(f"  {scenes_mod.duration_report(built)}")

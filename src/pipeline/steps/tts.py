@@ -20,9 +20,8 @@ import wave
 import numpy as np
 from piper import PiperVoice
 
-from ..project import MODELS_DIR, Options, Project, normalize, write_atomic
-
-VOICE = MODELS_DIR / "piper" / "fr_FR-siwis-medium.onnx"
+from ..language import for_project
+from ..project import Options, Project, normalize, write_atomic
 
 SENTENCE_SILENCE_MS = 450  # . ? ! — franchit le seuil « pause > 400 ms » (score 1.0)
 CLAUSE_SILENCE_MS = 220  # : ; — et … — sous le seuil des 250 ms, délibérément
@@ -69,7 +68,8 @@ def run(project: Project, opts: Options) -> None:
     # entier, y compris des deux invariants (SPEC §7).
     write_atomic(project.script_normalized, text)
 
-    voice = PiperVoice.load(str(VOICE))
+    language = for_project(project.dir)
+    voice = PiperVoice.load(str(language.voice_path))
     rate = voice.config.sample_rate
 
     audio: list[np.ndarray] = []
@@ -91,4 +91,7 @@ def run(project: Project, opts: Options) -> None:
         wav.writeframes(pcm.tobytes())
     tmp.replace(project.audio)
 
-    print(f"  audio : {len(samples) / rate / 60:.1f} min, {rate} Hz mono")
+    print(
+        f"  audio : {len(samples) / rate / 60:.1f} min, {rate} Hz mono "
+        f"— voix {language.voice}"
+    )

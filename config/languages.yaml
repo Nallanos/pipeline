@@ -1,0 +1,80 @@
+# Configuration par langue.
+#
+# Trois choses dépendent de la langue et une seule d'entre elles est évidente :
+# la voix TTS, le code passé à Whisper, et surtout la liste des connecteurs
+# logiques du §4.3.a du SPEC. Sans cette dernière, le signal « connecteur » de
+# la segmentation ne matche jamais rien et le barème perd un de ses cinq
+# signaux, silencieusement.
+
+default: en
+
+fr:
+  voice: fr_FR-siwis-medium
+  whisper: fr
+  # Connecteurs en tête de proposition : ils ouvrent une nouvelle articulation
+  # du raisonnement, donc souvent une nouvelle image.
+  connectives:
+    - mais
+    - donc
+    - alors
+    - ensuite
+    - cependant
+    - or
+    - puis
+    - pourtant
+    - ainsi
+    - néanmoins
+    - toutefois
+    - enfin
+    - car
+    - bref
+    - finalement
+    - désormais
+    - aujourd'hui
+    - pire
+    - mieux
+    - surtout
+    - pourquoi
+    - d'abord
+    - puisque
+    - tandis
+    - lorsque
+    - soudain
+
+en:
+  voice: en_US-ryan-high
+  whisper: en
+  connectives:
+    - but
+    - however
+    - yet
+    - so
+    - then
+    - therefore
+    - meanwhile
+    - instead
+    - still
+    - because
+    - although
+    - though
+    - eventually
+    - finally
+    - later
+    - soon
+    - suddenly
+    - today
+    - now
+    - once
+    - until
+    - unless
+    - besides
+    - worse
+    - better
+    - instead
+    - meanwhile
+    - nevertheless
+    - nonetheless
+    - moreover
+    - indeed
+    - clearly
+    - unfortunately

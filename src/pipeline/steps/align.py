@@ -10,6 +10,7 @@ import os
 import wave
 
 from ..alignment import WhisperWord, check_invariant_a, check_plausible, reconcile
+from ..language import for_project
 from ..project import Options, Project
 
 MODEL = "small"
@@ -35,7 +36,7 @@ def run(project: Project, opts: Options) -> None:
     )
     segments, _info = model.transcribe(
         str(project.audio),
-        language="fr",
+        language=for_project(project.dir).whisper,
         word_timestamps=True,
         # L'audio contient des silences insérés volontairement (steps/tts.py).
         # Le VAD les découperait et décalerait les temps rapportés.

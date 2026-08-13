@@ -8,6 +8,7 @@ système et il ne faut pas en introduire.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -77,6 +78,22 @@ class Options:
     force: bool = False
     draft: bool = False
     sample: bool = False
+
+
+def clean_source(text: str) -> tuple[str, int]:
+    """Ôte les horodatages d'un script importé. Retourne (texte, nb ôtés).
+
+    Les scripts viennent souvent d'un export de transcription et portent un
+    `[00:00:00]` par ligne. `normalize()` ne fait que compresser les espaces :
+    sans ce nettoyage, le TTS lirait les horodatages à voix haute, et l'invariant
+    A les traiterait comme des mots à part entière.
+
+    Appliqué **à l'import**, pas à la lecture : `script.txt` dans le projet est
+    toujours de la prose, et `normalize()` reste la seule définition de la
+    normalisation.
+    """
+    cleaned, count = re.subn(r"\[\d{1,2}:\d{2}(?::\d{2})?(?:[.,]\d+)?\]\s*", "", text)
+    return cleaned, count
 
 
 def normalize(text: str) -> str:

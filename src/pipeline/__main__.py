@@ -7,14 +7,13 @@
 from __future__ import annotations
 
 import argparse
-import shutil
 import sys
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-from .project import PROJECTS_DIR, Options, Project
+from .project import PROJECTS_DIR, Options, Project, clean_source, normalize
 
 
 @dataclass(frozen=True)
@@ -54,10 +53,31 @@ def cmd_new(args: argparse.Namespace) -> int:
     if not src.is_file():
         print(f"script introuvable : {src}", file=sys.stderr)
         return 1
+    from .language import default_code, load
+
+    try:
+        language = load(args.lang or default_code())
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    if not language.voice_path.exists():
+        print(
+            f"voix Piper absente : {language.voice_path.name}\n"
+            f"  uv run python -m piper.download_voices {language.voice} "
+            f"--data-dir models/piper",
+            file=sys.stderr,
+        )
+        return 1
+
+    cleaned, stripped = clean_source(src.read_text(encoding="utf-8"))
     project.dir.mkdir(parents=True)
-    shutil.copyfile(src, project.script)
-    chars = len(project.script.read_text(encoding="utf-8"))
-    print(f"projet '{args.id}' créé — {chars} caractères → {project.dir}")
+    project.script.write_text(cleaned, encoding="utf-8")
+    (project.dir / "language.txt").write_text(language.code, encoding="utf-8")
+
+    chars = len(normalize(cleaned))
+    print(f"projet '{args.id}' créé — {chars} caractères, langue '{language.code}'")
+    if stripped:
+        print(f"  {stripped} horodatages ôtés du script importé")
     return 0
 
 
@@ -117,6 +137,7 @@ def main(argv: list[str] | None = None) -> int:
     p_new = sub.add_parser("new", help="créer un projet")
     p_new.add_argument("id")
     p_new.add_argument("--script", required=True)
+    p_new.add_argument("--lang", help="langue du script (voir config/languages.yaml)")
     p_new.set_defaults(func=cmd_new)
 
     p_run = sub.add_parser("run", help="exécuter les étapes manquantes")

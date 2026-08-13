@@ -29,16 +29,9 @@ SCORE_COMMA = 0.3
 SENTENCE_END = (".", "!", "?", "…")
 CLAUSE_END = (":", ";", "—", "–")
 
-# Connecteurs logiques en tête de proposition : ils ouvrent une nouvelle
-# articulation du raisonnement, donc souvent une nouvelle image.
-CONNECTIVES = frozenset(
-    {
-        "mais", "donc", "alors", "ensuite", "cependant", "or", "puis", "pourtant",
-        "ainsi", "néanmoins", "toutefois", "enfin", "car", "bref", "finalement",
-        "désormais", "aujourd'hui", "pire", "mieux", "surtout", "pourquoi",
-        "d'abord", "puisque", "tandis", "lorsque", "soudain",
-    }
-)
+# Les connecteurs logiques dépendent de la langue et vivent dans
+# config/languages.yaml. Un `detect()` appelé sans eux perd un des cinq signaux
+# du barème — silencieusement, puisque le score reste calculable.
 
 
 @dataclass(frozen=True)
@@ -83,7 +76,10 @@ def pause_thresholds(alignment: Alignment) -> tuple[int, int]:
     )
 
 
-def detect(alignment: Alignment) -> list[Candidate]:
+def detect(
+    alignment: Alignment,
+    connectives: frozenset[str] = frozenset(),
+) -> list[Candidate]:
     """Calcule le score cumulatif de chaque position inter-mots.
 
     Les signaux se cumulent et sont plafonnés à 1.0 : une pause longue sur une
@@ -118,7 +114,7 @@ def detect(alignment: Alignment) -> list[Candidate]:
             reasons.append("comma")
 
         head = words[i].lower().strip("«\"'([").rstrip(",")
-        if head in CONNECTIVES:
+        if head in connectives:
             score += SCORE_CONNECTIVE
             reasons.append(f"connective:{head}")
 

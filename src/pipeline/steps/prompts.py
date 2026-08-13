@@ -11,40 +11,75 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 from ..project import PROMPTS_DIR, Options, Project, write_atomic
 from ..scenes import Scene, load, sample_indices
 from ..style import StyleConfig
 from ..style import load as load_style
 
-MODEL = "claude-sonnet-5"
 BATCH_SIZE = 20
-MAX_WORKERS = 8
+# Chaque appel lance un processus CLI complet (~300 Mo de binaire), pas une
+# requête HTTP : on parallélise beaucoup moins qu'avec le SDK.
+MAX_WORKERS = 3
 RETRIES = 2
+TIMEOUT_S = 300
 
 _JSON_OBJECT = re.compile(r"\{.*\}", re.DOTALL)
 
+# Tout ce qui peut rater sur un lot sans que le run entier doive s'arrêter.
+_RECOVERABLE = (
+    ValueError,
+    KeyError,
+    json.JSONDecodeError,
+    subprocess.SubprocessError,
+    RuntimeError,
+)
 
-def _client() -> object:
-    from anthropic import Anthropic
 
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        raise RuntimeError(
-            "ANTHROPIC_API_KEY non défini. Le reste du pipeline reste utilisable : "
-            "`run <id> --step images` puis `--step render` génèrent la vidéo en "
-            "prenant le texte de la scène comme prompt (error_code=no_prompt)."
+def _binary() -> str:
+    """Localise le CLI Claude Code.
+
+    On passe par le CLI plutôt que par le SDK : il est couvert par l'abonnement
+    Claude Pro, là où l'API se facture séparément. En contrepartie la
+    parallélisation est limitée et les quotas sont ceux de l'abonnement.
+    """
+    override = os.environ.get("CLAUDE_BIN")
+    if override:
+        return override
+    found = shutil.which("claude")
+    if found:
+        return found
+    # Le binaire livré avec l'extension VS Code, quand le CLI n'est pas dans le PATH.
+    candidates = sorted(
+        (Path.home() / ".vscode-server" / "extensions").glob(
+            "anthropic.claude-code-*/resources/native-binary/claude"
         )
-    return Anthropic()
-
-
-def _ask(client: object, prompt: str, max_tokens: int) -> str:
-    message = client.messages.create(  # type: ignore[attr-defined]
-        model=MODEL,
-        max_tokens=max_tokens,
-        messages=[{"role": "user", "content": prompt}],
     )
-    return "".join(block.text for block in message.content if block.type == "text")
+    if candidates:
+        return str(candidates[-1])
+    raise RuntimeError(
+        "CLI Claude introuvable. Installer Claude Code, ou pointer CLAUDE_BIN "
+        "sur le binaire. Le reste du pipeline reste utilisable : "
+        "`run <id> --step images` puis `--step render` génèrent la vidéo en "
+        "prenant le texte de la scène comme prompt (error_code=no_prompt)."
+    )
+
+
+def _ask(binary: str, prompt: str, max_tokens: int) -> str:
+    del max_tokens  # le CLI ne l'expose pas ; la longueur est bornée par le prompt
+    result = subprocess.run(
+        [binary, "-p", prompt],
+        capture_output=True,
+        text=True,
+        timeout=TIMEOUT_S,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"claude -p a échoué ({result.returncode}) : {result.stderr[:200]}")
+    return result.stdout
 
 
 def _parse(raw: str) -> dict[int, str]:
@@ -56,10 +91,10 @@ def _parse(raw: str) -> dict[int, str]:
     return {int(item["index"]): str(item["prompt"]).strip() for item in data["prompts"]}
 
 
-def _summarize(client: object, script: str) -> str:
+def _summarize(binary: str, script: str) -> str:
     excerpt = script if len(script) < 12_000 else f"{script[:6000]}\n[…]\n{script[-6000:]}"
     return _ask(
-        client,
+        binary,
         "Résume ce script de vidéo en un paragraphe de 80 mots maximum : sujet, "
         "ton, et fil narratif. Ce résumé servira à garder une cohérence visuelle "
         "entre 300 illustrations. Réponds par le seul paragraphe.\n\n" + excerpt,
@@ -89,8 +124,8 @@ def run(project: Project, opts: Options) -> None:
     selected = set(sample_indices(scenes, scenes[-1].end_ms)) if opts.sample else None
     todo = [s for s in scenes if selected is None or s.index in selected]
 
-    client = _client()
-    summary = _summarize(client, project.script_normalized.read_text(encoding="utf-8"))
+    binary = _binary()
+    summary = _summarize(binary, project.script_normalized.read_text(encoding="utf-8"))
 
     batches = [todo[i : i + BATCH_SIZE] for i in range(0, len(todo), BATCH_SIZE)]
 
@@ -102,12 +137,12 @@ def run(project: Project, opts: Options) -> None:
         prompt = _batch_prompt(style, summary, previous, batch)
         for attempt in range(RETRIES + 1):
             try:
-                parsed = _parse(_ask(client, prompt, max_tokens=200 * len(batch) + 500))
+                parsed = _parse(_ask(binary, prompt, max_tokens=200 * len(batch) + 500))
                 missing = {s.index for s in batch} - parsed.keys()
                 if missing and attempt < RETRIES:
                     raise ValueError(f"index manquants : {sorted(missing)}")
                 return parsed
-            except (ValueError, KeyError, json.JSONDecodeError) as exc:
+            except _RECOVERABLE as exc:
                 if attempt == RETRIES:
                     print(f"  lot {first}: abandon après {RETRIES + 1} essais — {exc}")
                     return {}
@@ -124,7 +159,7 @@ def run(project: Project, opts: Options) -> None:
         project.dir / "prompts.json",
         json.dumps(
             {
-                "model": MODEL,
+                "via": "claude-code-cli",
                 "summary": summary,
                 "prompts": {str(k): v for k, v in prompts.items()},
             },
