@@ -93,13 +93,23 @@ def _parse(raw: str) -> dict[int, str]:
 
 def _summarize(binary: str, script: str) -> str:
     excerpt = script if len(script) < 12_000 else f"{script[:6000]}\n[…]\n{script[-6000:]}"
-    return _ask(
-        binary,
+    prompt = (
         "Résume ce script de vidéo en un paragraphe de 80 mots maximum : sujet, "
         "ton, et fil narratif. Ce résumé servira à garder une cohérence visuelle "
-        "entre 300 illustrations. Réponds par le seul paragraphe.\n\n" + excerpt,
-        max_tokens=400,
+        "entre 300 illustrations. Réponds par le seul paragraphe.\n\n" + excerpt
     )
+    # Un seul appel, contrairement aux lots ci-dessous — mais une panne
+    # transitoire du CLI ici tue tout le run avant même le premier lot. Même
+    # nombre de tentatives que pour les lots, pour la même raison.
+    for attempt in range(RETRIES + 1):
+        try:
+            return _ask(binary, prompt, max_tokens=400)
+        except _RECOVERABLE as exc:
+            if attempt == RETRIES:
+                raise RuntimeError(
+                    f"résumé du script : abandon après {RETRIES + 1} essais — {exc}"
+                ) from exc
+    raise AssertionError("unreachable")
 
 
 def _batch_prompt(
