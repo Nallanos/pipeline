@@ -21,10 +21,25 @@ curl -sL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.t
   | tar xJ --strip-components=1 -C ~/.local/bin --wildcards '*/ffmpeg' '*/ffprobe'
 ```
 
+## Langues
+
+`config/languages.yaml` définit, par langue, la voix Piper, le code Whisper et
+la **liste des connecteurs logiques**. Cette dernière est celle qu'on oublie :
+un script anglais segmenté avec des connecteurs français ne matche jamais rien,
+et le barème du §4.3.a perd un de ses cinq signaux sans que rien ne le signale.
+
+La langue est fixée à la création du projet (`--lang`, défaut dans le YAML) et
+persistée dans `projects/<id>/language.txt` — un projet a un script, donc une
+langue. Télécharger la voix correspondante avant :
+
+```bash
+uv run python -m piper.download_voices en_US-ryan-high --data-dir models/piper
+```
+
 ## Utilisation
 
 ```bash
-python -m pipeline new snow --script mon_script.txt
+python -m pipeline new snow --script mon_script.txt --lang en
 python -m pipeline run snow                    # toutes les étapes manquantes
 python -m pipeline run snow --sample --draft   # itération rapide
 python -m pipeline run snow --step images      # une seule étape
@@ -47,9 +62,21 @@ abstraction du système — ne pas en introduire d'autre.
 | `tts` | `audio.wav` | Piper local, silences insérés par ponctuation |
 | `align` | `alignment.json` | forced alignment Whisper, ~1× temps réel en CPU |
 | `segment` | `scenes.json` | frontières pondérées, découpe sous contrainte |
-| `prompts` | `prompts.json` | API Anthropic, lots de 20 scènes |
+| `prompts` | `prompts.json` | CLI Claude Code, lots de 20 scènes |
 | `images` | `images.json` + `images/*.png` | provider bouchon ou ComfyUI |
 | `render` | `out.mp4` | un segment par scène en parallèle, puis concat |
+
+## L'étape prompts
+
+Elle appelle le **CLI Claude Code** (`claude -p`) plutôt que le SDK Anthropic :
+le CLI est couvert par l'abonnement Claude Pro, là où l'API se facture
+séparément. Le binaire est cherché dans `CLAUDE_BIN`, puis dans le `PATH`, puis
+dans l'extension VS Code.
+
+Le prix de ce choix : chaque appel lance un processus complet, donc 3 workers au
+lieu de 8, et les quotas sont ceux de l'abonnement. Pour repasser sur l'API,
+remplacer `_binary()` / `_ask()` par un client `anthropic` — le reste de
+l'étape est inchangé.
 
 ## Providers d'images
 
