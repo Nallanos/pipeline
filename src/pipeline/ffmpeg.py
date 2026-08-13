@@ -16,11 +16,17 @@ HEIGHT = 1080
 DRAFT_WIDTH = 1138
 DRAFT_HEIGHT = 640
 
-# zoompan calcule x et y en entiers sur la résolution d'**entrée**. Sur un zoom
-# lent, l'arrondi fait sauter l'image d'un pixel toutes les quelques frames —
-# le tremblement caractéristique du Ken Burns fait à la va-vite. Suréchantillonner
-# l'entrée avant le filtre divise l'erreur d'autant. C'est aussi l'agrandissement
-# dont on a besoin de toute façon, SDXL produisant plus petit que la cible.
+# zoompan calcule sa position de recadrage en pixels entiers, à sa résolution
+# de SORTIE — indépendamment de la résolution d'entrée. Suréchantillonner
+# l'entrée (comme le faisait la première version) ne corrige donc rien : le
+# même arrondi frappe à 1080p qu'à 4K en entrée, et le résultat est un
+# tremblement caractéristique, un saut d'un pixel toutes les quelques frames.
+#
+# Le correctif standard pour ce défaut connu de zoompan : le faire sortir à une
+# résolution plus grande que la cible, puis redescendre avec un filtre de
+# qualité (lanczos). Un saut d'un pixel à 2× la résolution finale devient un
+# demi-pixel après la réduction — sous le seuil de perception, lissé par
+# l'interpolation plutôt que visible comme un décrochage.
 OVERSAMPLE = 2
 
 
@@ -82,7 +88,14 @@ def segment_command(
         f"scale={width * OVERSAMPLE}:{height * OVERSAMPLE}"
         f":force_original_aspect_ratio=increase,"
         f"crop={width * OVERSAMPLE}:{height * OVERSAMPLE},"
-        f"zoompan=z='{z}':x='{x}':y='{y}':d=1:s={width}x{height}:fps={FPS},"
+        # zoompan sort à la même résolution suréchantillonnée que son entrée —
+        # c'est cette sortie-là qui doit être plus grande que la cible finale
+        # pour que le lissage ait quelque chose à lisser.
+        f"zoompan=z='{z}':x='{x}':y='{y}':d=1"
+        f":s={width * OVERSAMPLE}x{height * OVERSAMPLE}:fps={FPS},"
+        # Redescente à la résolution finale : c'est elle qui absorbe le
+        # tremblement en le transformant en flou sous-pixel.
+        f"scale={width}:{height}:flags=lanczos,"
         f"format=yuv420p"
     )
 
@@ -99,6 +112,35 @@ def segment_command(
         # produit des sauts de timing aux jointures.
         "-g", str(FPS), "-keyint_min", str(FPS), "-sc_threshold", "0",
         "-pix_fmt", "yuv420p",
+        str(output),
+    ]
+
+
+def audio_slice_command(audio: Path, start_ms: int, end_ms: int, output: Path) -> list[str]:
+    """Extrait la tranche [start_ms, end_ms) de l'audio, sans ré-encoder.
+
+    Utilisé par le rendu `--sample` : les scènes sélectionnées viennent de
+    fenêtres disjointes, donc l'audio ne peut pas être une simple tranche
+    continue — il faut découper puis recoller dans le même ordre que la vidéo.
+    """
+    return [
+        binary(),
+        "-y", "-loglevel", "error", "-nostdin",
+        "-i", str(audio),
+        "-ss", f"{start_ms / 1000:.3f}",
+        "-to", f"{end_ms / 1000:.3f}",
+        "-c", "copy",
+        str(output),
+    ]
+
+
+def concat_audio_command(list_file: Path, output: Path) -> list[str]:
+    """Concatène des tranches audio (mêmes format/débit — copie de flux)."""
+    return [
+        binary(),
+        "-y", "-loglevel", "error", "-nostdin",
+        "-f", "concat", "-safe", "0", "-i", str(list_file),
+        "-c", "copy",
         str(output),
     ]
 

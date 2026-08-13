@@ -70,6 +70,17 @@ class Project:
     def out(self) -> Path:
         return self.dir / "out.mp4"
 
+    @property
+    def out_sample(self) -> Path:
+        """Sortie du rendu `--sample` (SPEC §5.1) — jamais `out.mp4`.
+
+        Le mode `--sample` produit un montage disjoint (3 fenêtres de 30 s) dont
+        l'audio ne correspond qu'à un fragment continu, jamais aux trois
+        fenêtres réellement montées. C'est un artefact de jugement, pas un
+        livrable : il ne doit jamais pouvoir écraser la vidéo complète.
+        """
+        return self.dir / "out.sample.mp4"
+
 
 @dataclass(frozen=True)
 class Options:

@@ -13,7 +13,14 @@ import subprocess
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
-from ..ffmpeg import concat_command, duration_ms, frame_span, segment_command
+from ..ffmpeg import (
+    audio_slice_command,
+    concat_audio_command,
+    concat_command,
+    duration_ms,
+    frame_span,
+    segment_command,
+)
 from ..project import Options, Project
 from ..scenes import Scene, load, sample_indices
 
@@ -67,16 +74,43 @@ def run(project: Project, opts: Options) -> None:
         encoding="utf-8",
     )
 
-    subprocess.run(concat_command(list_file, project.audio, project.out), check=True)
+    out_path = project.out_sample if opts.sample else project.out
 
-    video_ms = duration_ms(project.out)
-    audio_ms = duration_ms(project.audio)
-    expected = sum(s.duration_ms for s in todo)
+    if selected is None:
+        # Scènes contiguës depuis 0 : l'audio complet correspond déjà exactement
+        # à la vidéo, une seule tranche suffit.
+        audio_for_mux = project.audio
+    else:
+        # Scènes disjointes (3 fenêtres du §5.1) : l'audio doit être découpé et
+        # recollé dans le même ordre que la vidéo, sinon le mux fait entendre
+        # le début du script pendant que l'image montre la fin.
+        audio_parts = []
+        for scene in todo:
+            part = project.segments / f"audio-{scene.index:04d}.wav"
+            subprocess.run(
+                audio_slice_command(project.audio, scene.start_ms, scene.end_ms, part),
+                check=True,
+            )
+            audio_parts.append(part)
+        audio_list = project.segments / "concat_audio.txt"
+        audio_list.write_text(
+            "".join(f"file '{p.name}'\n" for p in audio_parts), encoding="utf-8"
+        )
+        audio_for_mux = project.segments / "sample_audio.wav"
+        subprocess.run(concat_audio_command(audio_list, audio_for_mux), check=True)
+
+    subprocess.run(concat_command(list_file, audio_for_mux, out_path), check=True)
+
+    video_ms = duration_ms(out_path)
+    reference_ms = sum(s.duration_ms for s in todo)
 
     # Purge des segments : en --sample on les garde, l'itération est le but.
     if not opts.sample:
         shutil.rmtree(project.segments, ignore_errors=True)
 
-    drift = video_ms - (audio_ms if selected is None else expected)
-    print(f"  {len(todo)} segments — vidéo {video_ms / 1000:.1f} s, audio {audio_ms / 1000:.1f} s")
+    drift = video_ms - reference_ms
+    print(
+        f"  {len(todo)} segments → {out_path.name} — "
+        f"vidéo {video_ms / 1000:.1f} s, audio {reference_ms / 1000:.1f} s"
+    )
     print(f"  dérive vidéo/audio : {drift:+d} ms")
