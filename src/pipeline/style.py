@@ -34,8 +34,20 @@ class StyleConfig:
         )
 
     def full_prompt(self, subject: str) -> str:
-        """Le prompt envoyé au générateur d'images."""
-        return f"{subject}. {self.medium}. {self.palette}. {self.lighting}. {self.suffix}"
+        """Le prompt envoyé au générateur d'images.
+
+        `framing` était défini dans `style.yaml` et donné au LLM (via `bible()`)
+        mais jamais transmis à SDXL — bug resté invisible parce que le prompt
+        restait syntaxiquement valide sans lui. C'est probablement ce qui a
+        laissé SDXL improviser un cadrage différent de « plan moyen » sur
+        certaines scènes (constaté sur un run réel, 14/08).
+
+        `suffix` n'est délibérément pas concaténé ici : il ne fait que répéter
+        des interdictions déjà dans `negative` (texte, filigrane, signature),
+        et chaque mot en trop rapproche de la limite ~75 tokens de l'encodeur
+        CLIP — au-delà, la fin du prompt est tronquée en silence.
+        """
+        return f"{subject}. {self.medium}. {self.palette}. {self.framing}. {self.lighting}"
 
 
 def load(draft: bool = False) -> StyleConfig:

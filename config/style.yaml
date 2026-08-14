@@ -8,17 +8,21 @@ name: trait-encre-monochrome
 
 # Le trait. Volontairement simple : SDXL est faible sur l'adhérence aux prompts
 # complexes, et un style graphique épuré ne la sollicite pas (SPEC §6).
+# Resserré pour tenir dans le budget ~75 tokens de l'encodeur CLIP une fois
+# palette + cadrage + lumière + sujet ajoutés (voir full_prompt() dans style.py).
 medium: >-
-  editorial ink illustration, clean confident linework, sparse hatching for
-  shadow, generous negative space, flat matte fills
+  editorial ink illustration, clean linework, sparse hatching, flat fills
 
+# « Noir et blanc + une touche de couleur » était une consigne contradictoire :
+# SDXL la résout différemment à chaque seed, parfois en colorisant toute
+# l'image (observé sur un run réel — voir le journal du 14/08). Le monochrome
+# strict est plus facile à tenir sur 300 générations indépendantes qu'une
+# règle avec exception.
 palette: >-
-  restrained palette, warm off-white paper background, deep indigo ink,
-  a single muted ochre accent used sparingly
+  strict black and white, off-white paper, deep indigo ink only
 
 framing: >-
-  single clear subject, mid-shot, simple uncluttered composition,
-  horizon low in frame, subject slightly off-centre
+  single subject, mid-shot, simple composition, subject off-centre
 
 lighting: >-
   soft even daylight, no dramatic contrast
@@ -28,10 +32,12 @@ suffix: >-
   no text, no lettering, no watermark, no signature
 
 # Négatifs passés au modèle local (ignorés par les providers qui n'en ont pas).
+# Ciblés sur les dérives réellement observées plutôt que génériques : un
+# négatif trop long dilue autant que le positif (budget ~75 tokens CLIP).
 negative: >-
-  photorealistic, 3d render, cgi, text, letters, watermark, signature,
-  extra fingers, deformed hands, cluttered, busy background, oversaturated,
-  lens flare, bokeh, low quality, jpeg artifacts
+  color, colored, vibrant, saturated colors, painting, oil painting,
+  watercolor, photorealistic, 3d render, cgi, text, letters, watermark,
+  signature, cluttered, busy background, blurry, low quality
 
 # Résolution native SDXL. Le rendu génère en 2x la cible pour laisser de la
 # marge au zoompan (voir ffmpeg.py).
@@ -43,5 +49,8 @@ draft:
   height: 448
   steps: 12
 
-steps: 28
-cfg: 5.5
+# cfg à 5.5 laissait trop de liberté au modèle par rapport à ce qu'on demande
+# (dérive vers son propre a priori — dont la couleur). 6.0-6.5 est la zone où
+# il colle davantage au prompt sans cramer les contrastes ni les hachures.
+steps: 30
+cfg: 6.5
