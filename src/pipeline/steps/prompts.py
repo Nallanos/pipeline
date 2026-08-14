@@ -22,6 +22,10 @@ from ..style import StyleConfig
 from ..style import load as load_style
 
 BATCH_SIZE = 20
+# Décrire une scène en 15-30 mots n'est pas une tâche qui a besoin d'Opus —
+# c'est de la description factuelle courte, pas du raisonnement. Haiku va
+# nettement plus vite pour ce travail, sur les ~15 lots d'un run complet.
+MODEL = os.environ.get("PIPELINE_PROMPTS_MODEL", "haiku")
 # Chaque appel lance un processus CLI complet (~300 Mo de binaire), pas une
 # requête HTTP : on parallélise beaucoup moins qu'avec le SDK.
 MAX_WORKERS = 3
@@ -72,7 +76,7 @@ def _binary() -> str:
 def _ask(binary: str, prompt: str, max_tokens: int) -> str:
     del max_tokens  # le CLI ne l'expose pas ; la longueur est bornée par le prompt
     result = subprocess.run(
-        [binary, "-p", prompt],
+        [binary, "--model", MODEL, "-p", prompt],
         capture_output=True,
         text=True,
         timeout=TIMEOUT_S,
