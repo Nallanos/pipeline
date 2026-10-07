@@ -1,0 +1,124 @@
+<title>Bake-off modèles d'image</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout : tableau des modèles (temps, coût, licence) en tête, puis une planche par scène où chaque modèle a sa vignette ; des cases à cocher masquent les modèles qu'on ne veut pas comparer. */
+:root {
+  --bg: #f3f4f6;
+  --panel: #ffffff;
+  --ink: #16191f;
+  --muted: #5b6270;
+  --line: #d9dce3;
+  --accent: #2346a8;
+  --chip: #e7e9ee;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Serif 4", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151b; --panel: #1b1f27; --ink: #e8eaf0; --muted: #9aa2b2; --line: #2d333f; --accent: #8ea8ff; --chip: #2a303b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151b; --panel: #1b1f27; --ink: #e8eaf0; --muted: #9aa2b2; --line: #2d333f; --accent: #8ea8ff; --chip: #2a303b; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 1400px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; display: grid; gap: 40px; }
+h1, h2, h3 { font-family: var(--display); font-stretch: 85%; text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; }
+.eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.intro { display: grid; gap: 14px; max-width: 75ch; }
+.lede { font-size: 1.15rem; }
+section { display: grid; gap: 16px; }
+.table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 0.92rem; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font-family: var(--mono); font-weight: 500; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+tbody th { font-family: var(--display); font-weight: 700; }
+td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+small { color: var(--muted); }
+.note { color: var(--muted); font-size: 0.92rem; max-width: 80ch; }
+.verdicts { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; max-width: 85ch; }
+.verdicts li { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.verdicts b { font-family: var(--display); font-stretch: 90%; margin-right: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); padding-block: 10px; z-index: 2; }
+.chip { font-family: var(--mono); font-size: 0.8rem; background: var(--chip); border: 1px solid var(--line); padding: 5px 10px; border-radius: 999px; display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.chip input { accent-color: var(--accent); }
+.chip:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.scenes { display: grid; gap: 26px; }
+.scene { background: var(--panel); border: 1px solid var(--line); padding: 16px; display: grid; gap: 12px; }
+.scene header { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.meta { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+.foot { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
+.refs { display: flex; gap: 6px; }
+.refs img { height: 56px; width: auto; border: 1px solid var(--line); }
+.prompt { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); overflow-wrap: anywhere; min-width: 0; }
+.prompt span { text-transform: uppercase; letter-spacing: 0.08em; margin-right: 6px; color: var(--ink); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
+figure img { width: 100%; height: auto; aspect-ratio: 1344 / 768; object-fit: cover; display: block; background: var(--chip); cursor: zoom-in; }
+figure.big { grid-column: 1 / -1; }
+figure.big img { cursor: zoom-out; }
+figcaption { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+@media (max-width: 640px) { .foot { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <p class="eyebrow">Bake-off · 7 octobre 2026 · mêmes 20 scènes, mêmes références</p>
+    <h1>Bake-off modèles d'image</h1>
+    <p class="lede">Tous les modèles d'édition d'image ouverts, sous licence qui permet une chaîne monétisée, et pris en charge nativement par ComfyUI, sur les 20 scènes réelles de video5 et escobart.</p>
+    <p class="note">Écartés pour licence : FLUX.2 Klein 9B et FLUX.2 dev (non commerciales), Qwen Image 2.1 (qwen-research), Capybara et HunyuanImage (licence Tencent qui exclut l'UE), Krea-2 (licence communautaire propre). Écartés pour usage : OmniGen2 (2025, dépassé), ChronoEdit (une seule image, retouche physique), Ming-Image Design (affiches). Cliquer une vignette l'agrandit.</p>
+  </div>
+
+  <section aria-labelledby="t-h">
+    <h2 id="t-h">Temps et coût</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Modèle</th><th>Licence</th><th>Réglage</th><th>Références</th><th>Temps / image</th><th>Coût / vidéo</th><th>Images</th></tr></thead>
+        <tbody>{{ROWS}}</tbody>
+      </table>
+    </div>
+    <p class="note">Temps serveur ComfyUI puis temps réel vu par le pipeline (allers-retours vers le proxy Runpod compris), médianes en régime établi sur L40S 48 Go, pondérées pour 16 % de scènes avec décor. Coût : 405 images à 1,09 $/h, en envoi séquentiel, hors démarrage du pod (~0,07 $).</p>
+  </section>
+
+  <section aria-labelledby="v-h">
+    <h2 id="v-h">Ce que j'y vois</h2>
+    <p class="note">Ma lecture des planches, à confronter à ton œil : sur le premier test, j'avais sous-estimé les écarts que toi tu voyais.</p>
+    <ul class="verdicts">
+      <li><b>HiDream-O1 Dev</b> Le plus « vivant » des nouveaux : il fait vraiment agenouiller, marcher, s'effondrer sur le volant (escobart 220, 271, 284), et suit les décors de référence. Défauts : une teinte parfois délavée et grenée, et une scène où le héros disparaît (escobart 35). 8 à 9 s l'image, comme Qwen.</li>
+      <li><b>Mage-Flow Edit Turbo</b> Propre, décors fidèles, et de loin le plus rapide : 1,4 à 2,2 s l'image, soit ~0,30 $ la vidéo. Mais le héros reste souvent debout face caméra quoi que dise le prompt (escobart 220, 271, 284).</li>
+      <li><b>Qwen-Image-Edit-2511</b> Toujours le meilleur sur l'action et l'adhérence au prompt, avec ses hallucinations connues (palais coréen, clones).</li>
+      <li><b>FireRed-Image-Edit 1.1</b> Taches et éclats colorés sur la plupart des images. Probablement mon réglage (poids bf16 de 41 Go convertis en fp8 à la volée, LoRA Lightning v1.2) plutôt que le modèle : non concluant.</li>
+      <li><b>Boogu Edit Turbo</b> et <b>LongCat Edit Turbo</b> Limités à une référence : Boogu rend des fonds gris quasi vides, LongCat clone le héros sur les figurants et ajoute des bulles.</li>
+      <li><b>JoyAI-Image-Edit</b> Arrêté après 3 images : recopie la référence sur fond vide avec du faux texte, pour 1 à 2 minutes l'image.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="s-h">
+    <h2 id="s-h">Les 20 scènes</h2>
+    <div class="chips" role="group" aria-label="Modèles affichés">{{CHIPS}}</div>
+    <div class="scenes">{{CARDS}}</div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var boxes = document.querySelectorAll('.chips input');
+  function apply() {
+    var on = {};
+    boxes.forEach(function (b) { on[b.getAttribute('data-m')] = b.checked; });
+    document.querySelectorAll('.grid figure').forEach(function (f) { f.hidden = !on[f.getAttribute('data-m')]; });
+  }
+  boxes.forEach(function (b) { b.addEventListener('change', apply); });
+  document.querySelectorAll('.grid figure img').forEach(function (img) {
+    img.addEventListener('click', function () { img.parentElement.classList.toggle('big'); });
+  });
+})();
+</script>

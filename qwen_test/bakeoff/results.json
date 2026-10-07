@@ -1,0 +1,1032 @@
+[
+ {
+  "model": "boogu",
+  "project": "video5",
+  "scene": 15,
+  "refs": 1,
+  "warmup": true,
+  "wall_s": 16.24,
+  "server_s": 15.331,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\video5\\0015.png"
+ },
+ {
+  "model": "boogu",
+  "project": "video5",
+  "scene": 37,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.46,
+  "server_s": 4.29,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\video5\\0037.png"
+ },
+ {
+  "model": "boogu",
+  "project": "video5",
+  "scene": 83,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.28,
+  "server_s": 4.262,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\video5\\0083.png"
+ },
+ {
+  "model": "boogu",
+  "project": "video5",
+  "scene": 105,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.29,
+  "server_s": 4.378,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\video5\\0105.png"
+ },
+ {
+  "model": "boogu",
+  "project": "video5",
+  "scene": 171,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.3,
+  "server_s": 4.297,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\video5\\0171.png"
+ },
+ {
+  "model": "boogu",
+  "project": "video5",
+  "scene": 181,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.25,
+  "server_s": 4.341,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\video5\\0181.png"
+ },
+ {
+  "model": "boogu",
+  "project": "video5",
+  "scene": 240,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.4,
+  "server_s": 4.386,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\video5\\0240.png"
+ },
+ {
+  "model": "boogu",
+  "project": "video5",
+  "scene": 248,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.02,
+  "server_s": 4.404,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\video5\\0248.png"
+ },
+ {
+  "model": "boogu",
+  "project": "video5",
+  "scene": 305,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.33,
+  "server_s": 4.39,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\video5\\0305.png"
+ },
+ {
+  "model": "boogu",
+  "project": "video5",
+  "scene": 310,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.44,
+  "server_s": 4.314,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\video5\\0310.png"
+ },
+ {
+  "model": "boogu",
+  "project": "escobart",
+  "scene": 32,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.15,
+  "server_s": 4.352,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\escobart\\0032.png"
+ },
+ {
+  "model": "boogu",
+  "project": "escobart",
+  "scene": 35,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.4,
+  "server_s": 4.364,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\escobart\\0035.png"
+ },
+ {
+  "model": "boogu",
+  "project": "escobart",
+  "scene": 93,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 4.92,
+  "server_s": 4.37,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\escobart\\0093.png"
+ },
+ {
+  "model": "boogu",
+  "project": "escobart",
+  "scene": 99,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.26,
+  "server_s": 4.409,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\escobart\\0099.png"
+ },
+ {
+  "model": "boogu",
+  "project": "escobart",
+  "scene": 150,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.17,
+  "server_s": 4.305,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\escobart\\0150.png"
+ },
+ {
+  "model": "boogu",
+  "project": "escobart",
+  "scene": 162,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.39,
+  "server_s": 4.343,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\escobart\\0162.png"
+ },
+ {
+  "model": "boogu",
+  "project": "escobart",
+  "scene": 220,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.42,
+  "server_s": 4.417,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\escobart\\0220.png"
+ },
+ {
+  "model": "boogu",
+  "project": "escobart",
+  "scene": 223,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 7.88,
+  "server_s": 6.999,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\escobart\\0223.png"
+ },
+ {
+  "model": "boogu",
+  "project": "escobart",
+  "scene": 271,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.28,
+  "server_s": 4.538,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\escobart\\0271.png"
+ },
+ {
+  "model": "boogu",
+  "project": "escobart",
+  "scene": 284,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 5.44,
+  "server_s": 4.39,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\boogu\\escobart\\0284.png"
+ },
+ {
+  "model": "mage",
+  "project": "video5",
+  "scene": 15,
+  "refs": 2,
+  "warmup": true,
+  "wall_s": 3.08,
+  "server_s": 2.236,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\video5\\0015.png"
+ },
+ {
+  "model": "mage",
+  "project": "video5",
+  "scene": 37,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 2.39,
+  "server_s": 1.366,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\video5\\0037.png"
+ },
+ {
+  "model": "mage",
+  "project": "video5",
+  "scene": 83,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 2.87,
+  "server_s": 2.232,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\video5\\0083.png"
+ },
+ {
+  "model": "mage",
+  "project": "video5",
+  "scene": 105,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 2.35,
+  "server_s": 1.388,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\video5\\0105.png"
+ },
+ {
+  "model": "mage",
+  "project": "video5",
+  "scene": 171,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 2.26,
+  "server_s": 1.376,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\video5\\0171.png"
+ },
+ {
+  "model": "mage",
+  "project": "video5",
+  "scene": 181,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 2.92,
+  "server_s": 2.327,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\video5\\0181.png"
+ },
+ {
+  "model": "mage",
+  "project": "video5",
+  "scene": 240,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 1.92,
+  "server_s": 1.343,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\video5\\0240.png"
+ },
+ {
+  "model": "mage",
+  "project": "video5",
+  "scene": 248,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 3.58,
+  "server_s": 2.615,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\video5\\0248.png"
+ },
+ {
+  "model": "mage",
+  "project": "video5",
+  "scene": 305,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 14.9,
+  "server_s": 13.872,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\video5\\0305.png"
+ },
+ {
+  "model": "mage",
+  "project": "video5",
+  "scene": 310,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 3.02,
+  "server_s": 2.231,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\video5\\0310.png"
+ },
+ {
+  "model": "mage",
+  "project": "escobart",
+  "scene": 32,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 3.03,
+  "server_s": 2.147,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\escobart\\0032.png"
+ },
+ {
+  "model": "mage",
+  "project": "escobart",
+  "scene": 35,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 2.61,
+  "server_s": 1.593,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\escobart\\0035.png"
+ },
+ {
+  "model": "mage",
+  "project": "escobart",
+  "scene": 93,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 2.24,
+  "server_s": 1.398,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\escobart\\0093.png"
+ },
+ {
+  "model": "mage",
+  "project": "escobart",
+  "scene": 99,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 3.0,
+  "server_s": 2.12,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\escobart\\0099.png"
+ },
+ {
+  "model": "mage",
+  "project": "escobart",
+  "scene": 150,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 3.39,
+  "server_s": 2.314,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\escobart\\0150.png"
+ },
+ {
+  "model": "mage",
+  "project": "escobart",
+  "scene": 162,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 2.32,
+  "server_s": 1.519,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\escobart\\0162.png"
+ },
+ {
+  "model": "mage",
+  "project": "escobart",
+  "scene": 220,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 2.3,
+  "server_s": 1.275,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\escobart\\0220.png"
+ },
+ {
+  "model": "mage",
+  "project": "escobart",
+  "scene": 223,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 3.02,
+  "server_s": 1.959,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\escobart\\0223.png"
+ },
+ {
+  "model": "mage",
+  "project": "escobart",
+  "scene": 271,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 3.04,
+  "server_s": 2.218,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\escobart\\0271.png"
+ },
+ {
+  "model": "mage",
+  "project": "escobart",
+  "scene": 284,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 2.44,
+  "server_s": 1.364,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\mage\\escobart\\0284.png"
+ },
+ {
+  "model": "joyai",
+  "project": "video5",
+  "scene": 15,
+  "refs": 2,
+  "warmup": true,
+  "wall_s": 132.81,
+  "server_s": 131.868,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\joyai\\video5\\0015.png"
+ },
+ {
+  "model": "joyai",
+  "project": "video5",
+  "scene": 37,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 67.72,
+  "server_s": 66.796,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\joyai\\video5\\0037.png"
+ },
+ {
+  "model": "joyai",
+  "project": "video5",
+  "scene": 83,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 126.17,
+  "server_s": 125.296,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\joyai\\video5\\0083.png"
+ },
+ {
+  "model": "longcat",
+  "project": "video5",
+  "scene": 15,
+  "refs": 1,
+  "warmup": true,
+  "wall_s": 22.79,
+  "server_s": 22.06,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\video5\\0015.png"
+ },
+ {
+  "model": "longcat",
+  "project": "video5",
+  "scene": 37,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 8.15,
+  "server_s": 7.052,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\video5\\0037.png"
+ },
+ {
+  "model": "longcat",
+  "project": "video5",
+  "scene": 83,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.56,
+  "server_s": 8.759,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\video5\\0083.png"
+ },
+ {
+  "model": "longcat",
+  "project": "video5",
+  "scene": 105,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.64,
+  "server_s": 8.771,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\video5\\0105.png"
+ },
+ {
+  "model": "longcat",
+  "project": "video5",
+  "scene": 171,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.98,
+  "server_s": 8.876,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\video5\\0171.png"
+ },
+ {
+  "model": "longcat",
+  "project": "video5",
+  "scene": 181,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.71,
+  "server_s": 8.749,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\video5\\0181.png"
+ },
+ {
+  "model": "longcat",
+  "project": "video5",
+  "scene": 240,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.83,
+  "server_s": 8.836,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\video5\\0240.png"
+ },
+ {
+  "model": "longcat",
+  "project": "video5",
+  "scene": 248,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.57,
+  "server_s": 8.896,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\video5\\0248.png"
+ },
+ {
+  "model": "longcat",
+  "project": "video5",
+  "scene": 305,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.85,
+  "server_s": 8.995,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\video5\\0305.png"
+ },
+ {
+  "model": "longcat",
+  "project": "video5",
+  "scene": 310,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 7.94,
+  "server_s": 7.083,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\video5\\0310.png"
+ },
+ {
+  "model": "longcat",
+  "project": "escobart",
+  "scene": 32,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.63,
+  "server_s": 8.905,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\escobart\\0032.png"
+ },
+ {
+  "model": "longcat",
+  "project": "escobart",
+  "scene": 35,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 7.85,
+  "server_s": 7.139,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\escobart\\0035.png"
+ },
+ {
+  "model": "longcat",
+  "project": "escobart",
+  "scene": 93,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.85,
+  "server_s": 8.93,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\escobart\\0093.png"
+ },
+ {
+  "model": "longcat",
+  "project": "escobart",
+  "scene": 99,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.61,
+  "server_s": 8.833,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\escobart\\0099.png"
+ },
+ {
+  "model": "longcat",
+  "project": "escobart",
+  "scene": 150,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.96,
+  "server_s": 8.913,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\escobart\\0150.png"
+ },
+ {
+  "model": "longcat",
+  "project": "escobart",
+  "scene": 162,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 7.64,
+  "server_s": 7.057,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\escobart\\0162.png"
+ },
+ {
+  "model": "longcat",
+  "project": "escobart",
+  "scene": 220,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 10.24,
+  "server_s": 9.043,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\escobart\\0220.png"
+ },
+ {
+  "model": "longcat",
+  "project": "escobart",
+  "scene": 223,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 8.29,
+  "server_s": 7.242,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\escobart\\0223.png"
+ },
+ {
+  "model": "longcat",
+  "project": "escobart",
+  "scene": 271,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 10.01,
+  "server_s": 8.984,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\escobart\\0271.png"
+ },
+ {
+  "model": "longcat",
+  "project": "escobart",
+  "scene": 284,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 8.36,
+  "server_s": 7.325,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\longcat\\escobart\\0284.png"
+ },
+ {
+  "model": "hidream",
+  "project": "video5",
+  "scene": 15,
+  "refs": 2,
+  "warmup": true,
+  "wall_s": 17.05,
+  "server_s": 16.157,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\video5\\0015.png"
+ },
+ {
+  "model": "hidream",
+  "project": "video5",
+  "scene": 37,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 10.22,
+  "server_s": 9.414,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\video5\\0037.png"
+ },
+ {
+  "model": "hidream",
+  "project": "video5",
+  "scene": 83,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 10.93,
+  "server_s": 9.792,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\video5\\0083.png"
+ },
+ {
+  "model": "hidream",
+  "project": "video5",
+  "scene": 105,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.13,
+  "server_s": 7.92,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\video5\\0105.png"
+ },
+ {
+  "model": "hidream",
+  "project": "video5",
+  "scene": 171,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.13,
+  "server_s": 8.044,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\video5\\0171.png"
+ },
+ {
+  "model": "hidream",
+  "project": "video5",
+  "scene": 181,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 10.41,
+  "server_s": 9.141,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\video5\\0181.png"
+ },
+ {
+  "model": "hidream",
+  "project": "video5",
+  "scene": 240,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 8.95,
+  "server_s": 7.833,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\video5\\0240.png"
+ },
+ {
+  "model": "hidream",
+  "project": "video5",
+  "scene": 248,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 10.0,
+  "server_s": 9.118,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\video5\\0248.png"
+ },
+ {
+  "model": "hidream",
+  "project": "video5",
+  "scene": 305,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 8.71,
+  "server_s": 7.906,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\video5\\0305.png"
+ },
+ {
+  "model": "hidream",
+  "project": "video5",
+  "scene": 310,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 9.75,
+  "server_s": 9.02,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\video5\\0310.png"
+ },
+ {
+  "model": "hidream",
+  "project": "escobart",
+  "scene": 32,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 10.17,
+  "server_s": 9.247,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\escobart\\0032.png"
+ },
+ {
+  "model": "hidream",
+  "project": "escobart",
+  "scene": 35,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.08,
+  "server_s": 8.127,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\escobart\\0035.png"
+ },
+ {
+  "model": "hidream",
+  "project": "escobart",
+  "scene": 93,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 8.98,
+  "server_s": 8.353,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\escobart\\0093.png"
+ },
+ {
+  "model": "hidream",
+  "project": "escobart",
+  "scene": 99,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 10.14,
+  "server_s": 9.252,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\escobart\\0099.png"
+ },
+ {
+  "model": "hidream",
+  "project": "escobart",
+  "scene": 150,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 10.11,
+  "server_s": 9.244,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\escobart\\0150.png"
+ },
+ {
+  "model": "hidream",
+  "project": "escobart",
+  "scene": 162,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.08,
+  "server_s": 8.11,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\escobart\\0162.png"
+ },
+ {
+  "model": "hidream",
+  "project": "escobart",
+  "scene": 220,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 9.02,
+  "server_s": 8.199,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\escobart\\0220.png"
+ },
+ {
+  "model": "hidream",
+  "project": "escobart",
+  "scene": 223,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 10.22,
+  "server_s": 9.222,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\escobart\\0223.png"
+ },
+ {
+  "model": "hidream",
+  "project": "escobart",
+  "scene": 271,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 10.23,
+  "server_s": 9.315,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\escobart\\0271.png"
+ },
+ {
+  "model": "hidream",
+  "project": "escobart",
+  "scene": 284,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 8.96,
+  "server_s": 7.836,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\hidream\\escobart\\0284.png"
+ },
+ {
+  "model": "firered",
+  "project": "video5",
+  "scene": 15,
+  "refs": 2,
+  "warmup": true,
+  "wall_s": 40.85,
+  "server_s": 39.671,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\video5\\0015.png"
+ },
+ {
+  "model": "firered",
+  "project": "video5",
+  "scene": 37,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 11.04,
+  "server_s": 9.944,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\video5\\0037.png"
+ },
+ {
+  "model": "firered",
+  "project": "video5",
+  "scene": 83,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 17.02,
+  "server_s": 16.154,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\video5\\0083.png"
+ },
+ {
+  "model": "firered",
+  "project": "video5",
+  "scene": 105,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 11.23,
+  "server_s": 10.171,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\video5\\0105.png"
+ },
+ {
+  "model": "firered",
+  "project": "video5",
+  "scene": 171,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 10.83,
+  "server_s": 9.894,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\video5\\0171.png"
+ },
+ {
+  "model": "firered",
+  "project": "video5",
+  "scene": 181,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 17.87,
+  "server_s": 16.446,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\video5\\0181.png"
+ },
+ {
+  "model": "firered",
+  "project": "video5",
+  "scene": 240,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 10.86,
+  "server_s": 9.937,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\video5\\0240.png"
+ },
+ {
+  "model": "firered",
+  "project": "video5",
+  "scene": 248,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 17.31,
+  "server_s": 16.512,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\video5\\0248.png"
+ },
+ {
+  "model": "firered",
+  "project": "video5",
+  "scene": 305,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 11.04,
+  "server_s": 9.909,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\video5\\0305.png"
+ },
+ {
+  "model": "firered",
+  "project": "video5",
+  "scene": 310,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 17.43,
+  "server_s": 16.599,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\video5\\0310.png"
+ },
+ {
+  "model": "firered",
+  "project": "escobart",
+  "scene": 32,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 17.93,
+  "server_s": 16.885,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\escobart\\0032.png"
+ },
+ {
+  "model": "firered",
+  "project": "escobart",
+  "scene": 35,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 11.17,
+  "server_s": 10.106,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\escobart\\0035.png"
+ },
+ {
+  "model": "firered",
+  "project": "escobart",
+  "scene": 93,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 10.87,
+  "server_s": 10.024,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\escobart\\0093.png"
+ },
+ {
+  "model": "firered",
+  "project": "escobart",
+  "scene": 99,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 17.94,
+  "server_s": 16.524,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\escobart\\0099.png"
+ },
+ {
+  "model": "firered",
+  "project": "escobart",
+  "scene": 150,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 17.23,
+  "server_s": 16.357,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\escobart\\0150.png"
+ },
+ {
+  "model": "firered",
+  "project": "escobart",
+  "scene": 162,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 10.91,
+  "server_s": 9.923,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\escobart\\0162.png"
+ },
+ {
+  "model": "firered",
+  "project": "escobart",
+  "scene": 220,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 11.19,
+  "server_s": 10.092,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\escobart\\0220.png"
+ },
+ {
+  "model": "firered",
+  "project": "escobart",
+  "scene": 223,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 17.56,
+  "server_s": 16.541,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\escobart\\0223.png"
+ },
+ {
+  "model": "firered",
+  "project": "escobart",
+  "scene": 271,
+  "refs": 2,
+  "warmup": false,
+  "wall_s": 17.75,
+  "server_s": 16.789,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\escobart\\0271.png"
+ },
+ {
+  "model": "firered",
+  "project": "escobart",
+  "scene": 284,
+  "refs": 1,
+  "warmup": false,
+  "wall_s": 12.08,
+  "server_s": 11.027,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\bakeoff\\firered\\escobart\\0284.png"
+ }
+]
