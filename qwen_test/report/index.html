@@ -1,0 +1,585 @@
+<title>Klein contre Qwen-Image-Edit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout : rapport de banc d'essai — verdict et chiffres d'abord, puis les 20 paires en planche contact, puis les contre-épreuves. */
+:root {
+  --bg: #f3f4f6;
+  --panel: #ffffff;
+  --ink: #16191f;
+  --muted: #5b6270;
+  --line: #d9dce3;
+  --accent: #2346a8;
+  --qwen: #0f7a63;
+  --qwen-bg: #dff3ec;
+  --klein: #9a5a00;
+  --klein-bg: #fbecd2;
+  --eq: #4f5663;
+  --eq-bg: #e7e9ee;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Serif 4", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151b; --panel: #1b1f27; --ink: #e8eaf0; --muted: #9aa2b2; --line: #2d333f;
+    --accent: #8ea8ff; --qwen: #5fd3b3; --qwen-bg: #143a31; --klein: #f0b357; --klein-bg: #3d2c10;
+    --eq: #b5bccb; --eq-bg: #2a303b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151b; --panel: #1b1f27; --ink: #e8eaf0; --muted: #9aa2b2; --line: #2d333f;
+  --accent: #8ea8ff; --qwen: #5fd3b3; --qwen-bg: #143a31; --klein: #f0b357; --klein-bg: #3d2c10;
+  --eq: #b5bccb; --eq-bg: #2a303b; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; display: grid; gap: 48px; }
+h1, h2, h3 { font-family: var(--display); font-stretch: 85%; text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: 1.6rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 700; }
+p { margin: 0; }
+.eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.2rem; max-width: 65ch; }
+.intro { display: grid; gap: 16px; }
+.verdict { border-left: 4px solid var(--accent); padding: 4px 0 4px 18px; max-width: 70ch; display: grid; gap: 10px; }
+.verdict strong { font-family: var(--display); }
+
+.figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.fig { background: var(--panel); padding: 18px 20px; display: grid; gap: 6px; align-content: start; }
+.fig .num { font-family: var(--mono); font-size: 1.7rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.fig .num small { font-size: 0.9rem; color: var(--muted); }
+.fig p { font-size: 0.9rem; color: var(--muted); }
+
+section { display: grid; gap: 18px; }
+.sechead { display: grid; gap: 6px; max-width: 75ch; }
+.sechead p { color: var(--muted); }
+
+.tally { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-family: var(--mono); font-size: 0.85rem; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filters button { font-family: var(--mono); font-size: 0.82rem; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.filters button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.chip { font-family: var(--mono); font-size: 0.75rem; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.v-qwen { color: var(--qwen); background: var(--qwen-bg); }
+.v-klein { color: var(--klein); background: var(--klein-bg); }
+.v-eq { color: var(--eq); background: var(--eq-bg); }
+
+.pairs { display: grid; gap: 28px; }
+.pair { background: var(--panel); border: 1px solid var(--line); padding: 16px; display: grid; gap: 12px; }
+.pair header { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
+.meta { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.imgs.three { grid-template-columns: repeat(3, 1fr); }
+figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
+figure img { width: 100%; height: auto; aspect-ratio: 1344 / 768; object-fit: cover; display: block; background: var(--eq-bg); }
+figcaption { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+.foot { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
+.refs { display: flex; gap: 6px; }
+.refs img { height: 64px; width: auto; border: 1px solid var(--line); }
+.txt { display: grid; gap: 6px; min-width: 0; }
+.note { font-size: 0.98rem; }
+.prompt { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); overflow-wrap: anywhere; }
+.prompt span { text-transform: uppercase; letter-spacing: 0.08em; margin-right: 6px; color: var(--ink); }
+
+.vrow { display: grid; gap: 8px; }
+.vlabel { font-family: var(--display); font-weight: 700; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+
+.todo { display: grid; gap: 14px; max-width: 80ch; padding: 0; margin: 0; list-style: none; }
+.todo li { display: grid; gap: 4px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.todo li b { font-family: var(--display); font-stretch: 90%; }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--eq-bg); padding: 1px 5px; border-radius: 3px; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 0.92rem; min-width: 560px; }
+th, td { text-align: left; padding: 8px 14px 8px 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; vertical-align: top; }
+th { font-family: var(--mono); font-weight: 500; font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+td.n { font-family: var(--mono); }
+
+@media (max-width: 640px) {
+  .imgs, .imgs.three { grid-template-columns: 1fr; }
+  .foot { grid-template-columns: 1fr; }
+}
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <p class="eyebrow">Banc d'essai · 7 octobre 2026 · 20 scènes réelles (video5, escobart)</p>
+    <h1>Klein contre Qwen-Image-Edit</h1>
+    <p class="lede">Mêmes prompts, mêmes références de costume et de décor. À gauche les images FLUX.2 Klein 4B déjà produites par le pipeline, à droite Qwen-Image-Edit-2511 avec le LoRA Lightning 4 pas, généré sur un GPU Runpod loué.</p>
+    <div class="verdict">
+      <p><strong>Verdict : pas de bascule pour la qualité seule.</strong> Sur les 20 paires, Qwen l'emporte sur 5, Klein sur 4, et 11 se valent. Qwen tient mieux le crâne rasé et suit mieux les prompts d'action, mais il n'est pas plus beau : le rendu reste celui de la style bible.</p>
+      <p>La contre-épreuve de style (plus bas) montre où est le vrai levier : en retirant « children's picture book », « minimal shading » et « single subject, simple uncluttered composition », les mêmes scènes gagnent des décors denses, des figurants et des cadrages variés. Ce test est à refaire sur Klein en local, gratuitement, avant de payer un GPU.</p>
+    </div>
+  </div>
+
+  <div class="figures" aria-label="Chiffres clés">
+    <div class="fig"><span class="eyebrow">Costume seul</span><span class="num">5,8 s <small>/ 8,3 s mur</small></span><p>Médiane sur 10 images, régime établi, L40S 48 Go.</p></div>
+    <div class="fig"><span class="eyebrow">Costume + décor</span><span class="num">9,2 s <small>/ 13,0 s mur</small></span><p>Médiane sur 8 images. Deux références coûtent ~3,4 s de plus.</p></div>
+    <div class="fig"><span class="eyebrow">Coût par vidéo de 15 min</span><span class="num">≈ 1,25 $</span><p>405 images à 9,0 s (16 % avec décor), + références et démarrage, à 1,09 $/h. ≈ 0,95 $ en gardant la file ComfyUI pleine.</p></div>
+    <div class="fig"><span class="eyebrow">Dépensé pour ce test</span><span class="num">≈ 0,33 $</span><p>Sur un plafond de 5 $. Les 3 pods sont supprimés, aucun volume réseau.</p></div>
+  </div>
+
+  <section aria-labelledby="pairs-h">
+    <div class="sechead">
+      <h2 id="pairs-h">Les 20 paires</h2>
+      <p>Moitié avec référence de décor, moitié sans, réparties sur tous les paliers. Les vignettes sous chaque paire sont les références envoyées au modèle.</p>
+    </div>
+    <div class="tally">
+      <span class="chip v-qwen">Qwen mieux · 5</span>
+      <span class="chip v-klein">Klein mieux · 4</span>
+      <span class="chip v-eq">Équivalent · 11</span>
+    </div>
+    <div class="filters" role="group" aria-label="Filtrer les paires">
+      <button type="button" id="f-all" data-f="all" aria-pressed="true">Toutes</button>
+      <button type="button" id="f-qwen" data-f="qwen" aria-pressed="false">Qwen mieux</button>
+      <button type="button" id="f-klein" data-f="klein" aria-pressed="false">Klein mieux</button>
+      <button type="button" id="f-eq" data-f="=" aria-pressed="false">Équivalent</button>
+    </div>
+    <div class="pairs" id="pairs">
+<article class="pair" data-verdict="=">
+  <header>
+    <h3>video5 · scène 15</h3>
+    <span class="chip v-eq">Équivalent</span>
+    <span class="meta">costume + décor · 9.3 s serveur · 13.1 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/video5_0015_klein.jpg" alt="Klein, scène 15" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/video5_0015_qwen.jpg" alt="Qwen, scène 15" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_video5_costume_000.jpg" alt="Référence de costume" loading="lazy"><img src="img/ref_video5_decor_002.jpg" alt="Référence de décor" loading="lazy"></div>
+    <div class="txt"><p class="note">Les deux suivent le décor de référence.</p><p class="prompt"><span>prompt</span> Bldguy arriving at military training camp in mountainous Ryanggang at altitude at dusk, concrete barracks complex, pine forest, bare stone ridges, wide shot</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="=">
+  <header>
+    <h3>video5 · scène 37</h3>
+    <span class="chip v-eq">Équivalent</span>
+    <span class="meta">costume seul · 5.8 s serveur · 7.5 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/video5_0037_klein.jpg" alt="Klein, scène 37" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/video5_0037_qwen.jpg" alt="Qwen, scène 37" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_video5_costume_000.jpg" alt="Référence de costume" loading="lazy"></div>
+    <div class="txt"><p class="note">Bulles de dialogue en charabia des deux côtés : le prompt dit « confessing words ».</p><p class="prompt"><span>prompt</span> bldguy standing cautiously confessing carefully chosen words about focus loss during political reading, soldiers listening intently</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="klein">
+  <header>
+    <h3>video5 · scène 83</h3>
+    <span class="chip v-klein">Klein mieux</span>
+    <span class="meta">costume + décor · 9.2 s serveur · 13.1 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/video5_0083_klein.jpg" alt="Klein, scène 83" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/video5_0083_qwen.jpg" alt="Qwen, scène 83" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_video5_costume_002.jpg" alt="Référence de costume" loading="lazy"><img src="img/ref_video5_decor_006.jpg" alt="Référence de décor" loading="lazy"></div>
+    <div class="txt"><p class="note">Qwen ignore le décor (salle ronde) et invente un palais avec une enseigne illisible.</p><p class="prompt"><span>prompt</span> bldguy moving from inside to edge of saenghwal ch&#x27;onghwa circle as saturday session begins, wide shot</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="=">
+  <header>
+    <h3>video5 · scène 105</h3>
+    <span class="chip v-eq">Équivalent</span>
+    <span class="meta">costume seul · 5.8 s serveur · 8.9 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/video5_0105_klein.jpg" alt="Klein, scène 105" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/video5_0105_qwen.jpg" alt="Qwen, scène 105" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_video5_costume_003.jpg" alt="Référence de costume" loading="lazy"></div>
+    <div class="txt"><p class="note">Équivalent.</p><p class="prompt"><span>prompt</span> bldguy in sangsa uniform standing motionless in barracks courtyard while columns of conscripts march past him toward liberation, gray compound walls enclosing</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="klein">
+  <header>
+    <h3>video5 · scène 171</h3>
+    <span class="chip v-klein">Klein mieux</span>
+    <span class="meta">costume seul · 5.8 s serveur · 8.6 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/video5_0171_klein.jpg" alt="Klein, scène 171" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/video5_0171_qwen.jpg" alt="Qwen, scène 171" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_video5_costume_005.jpg" alt="Référence de costume" loading="lazy"></div>
+    <div class="txt"><p class="note">Qwen donne le visage du héros à « Hwang » : deux bldguy identiques.</p><p class="prompt"><span>prompt</span> bldguy observing as Hwang marks minor discrepancy, uniforms, office interior, satisfied expression, bureaucratic closure</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="klein">
+  <header>
+    <h3>video5 · scène 181</h3>
+    <span class="chip v-klein">Klein mieux</span>
+    <span class="meta">costume + décor · 9.2 s serveur · 13.2 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/video5_0181_klein.jpg" alt="Klein, scène 181" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/video5_0181_qwen.jpg" alt="Qwen, scène 181" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_video5_costume_006.jpg" alt="Référence de costume" loading="lazy"><img src="img/ref_video5_decor_010.jpg" alt="Référence de décor" loading="lazy"></div>
+    <div class="txt"><p class="note">Klein reprend le bureau de référence, Qwen le simplifie en plan frontal.</p><p class="prompt"><span>prompt</span> bldguy age 42, khaki officer uniform, medium shot seated at wooden desk surrounded by filing cabinets and stacked documents, headquarters</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="=">
+  <header>
+    <h3>video5 · scène 240</h3>
+    <span class="chip v-eq">Équivalent</span>
+    <span class="meta">costume seul · 5.9 s serveur · 8.0 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/video5_0240_klein.jpg" alt="Klein, scène 240" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/video5_0240_qwen.jpg" alt="Qwen, scène 240" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_video5_costume_007.jpg" alt="Référence de costume" loading="lazy"></div>
+    <div class="txt"><p class="note">Équivalent ; Qwen écrit un faux mot sur la feuille.</p><p class="prompt"><span>prompt</span> Colonel bldguy holding classified document beside lockable drawer in private Moranbong apartment, military elite interior, rank insignia visible</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="=">
+  <header>
+    <h3>video5 · scène 248</h3>
+    <span class="chip v-eq">Équivalent</span>
+    <span class="meta">costume + décor · 9.1 s serveur · 13.1 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/video5_0248_klein.jpg" alt="Klein, scène 248" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/video5_0248_qwen.jpg" alt="Qwen, scène 248" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_video5_costume_008.jpg" alt="Référence de costume" loading="lazy"><img src="img/ref_video5_decor_014.jpg" alt="Référence de décor" loading="lazy"></div>
+    <div class="txt"><p class="note">Équivalent.</p><p class="prompt"><span>prompt</span> Sojang bldguy seated at consultative table in secure compound chamber, Soviet-style concrete interior, rank badges visible, phones deposited</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="=">
+  <header>
+    <h3>video5 · scène 305</h3>
+    <span class="chip v-eq">Équivalent</span>
+    <span class="meta">costume seul · 5.8 s serveur · 8.3 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/video5_0305_klein.jpg" alt="Klein, scène 305" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/video5_0305_qwen.jpg" alt="Qwen, scène 305" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_video5_costume_009.jpg" alt="Référence de costume" loading="lazy"></div>
+    <div class="txt"><p class="note">Deux bldguy des deux côtés : le prompt dit « side by side ».</p><p class="prompt"><span>prompt</span> bldguy holding old doctrine manual beside newer edition on teaching desk, examining them side by side, both visually compared, medium shot</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="qwen">
+  <header>
+    <h3>video5 · scène 310</h3>
+    <span class="chip v-qwen">Qwen mieux</span>
+    <span class="meta">costume + décor · 9.2 s serveur · 12.3 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/video5_0310_klein.jpg" alt="Klein, scène 310" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/video5_0310_qwen.jpg" alt="Qwen, scène 310" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_video5_costume_009.jpg" alt="Référence de costume" loading="lazy"><img src="img/ref_video5_decor_018.jpg" alt="Référence de décor" loading="lazy"></div>
+    <div class="txt"><p class="note">Qwen : vraie marche de profil, sol pavé, plus vivant.</p><p class="prompt"><span>prompt</span> bldguy walking alone on gravel perimeter path around military compound in evening light, austere buildings receding behind, bare landscape, medium shot from side</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="=">
+  <header>
+    <h3>escobart · scène 32</h3>
+    <span class="chip v-eq">Équivalent</span>
+    <span class="meta">costume + décor · cache</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/escobart_0032_klein.jpg" alt="Klein, scène 32" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/escobart_0032_qwen.jpg" alt="Qwen, scène 32" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_escobart_costume_000.jpg" alt="Référence de costume" loading="lazy"><img src="img/ref_escobart_decor_001.jpg" alt="Référence de décor" loading="lazy"></div>
+    <div class="txt"><p class="note">Équivalent (temps exclu : image servie par le cache de mon essai).</p><p class="prompt"><span>prompt</span> bldguy, bald man in faded school shirt in the foreground placing a bag of rice on a wooden table, a woman with a white headscarf and a gray housedress, reddened hands at the stove in the background, modest brick home, medium shot</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="=">
+  <header>
+    <h3>escobart · scène 35</h3>
+    <span class="chip v-eq">Équivalent</span>
+    <span class="meta">costume seul · 5.9 s serveur · 8.3 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/escobart_0035_klein.jpg" alt="Klein, scène 35" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/escobart_0035_qwen.jpg" alt="Qwen, scène 35" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_escobart_costume_000.jpg" alt="Référence de costume" loading="lazy"></div>
+    <div class="txt"><p class="note">Équivalent ; Qwen garde le sac à dos de la référence.</p><p class="prompt"><span>prompt</span> bldguy in faded school shirt turning to face a wiry man with bleached blond hair, red tracksuit jacket and thick gold chain sitting on a chrome motorcycle, brick wall behind, shadowed alley, medium shot</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="klein">
+  <header>
+    <h3>escobart · scène 93</h3>
+    <span class="chip v-klein">Klein mieux</span>
+    <span class="meta">costume seul · 5.8 s serveur · 8.6 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/escobart_0093_klein.jpg" alt="Klein, scène 93" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/escobart_0093_qwen.jpg" alt="Qwen, scène 93" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_escobart_costume_002.jpg" alt="Référence de costume" loading="lazy"></div>
+    <div class="txt"><p class="note">Qwen recopie le revolver et la pose frontale de la référence de costume.</p><p class="prompt"><span>prompt</span> bldguy standing before weathered bakery storefront with shattered glass window, expression hardening in fading streetlight</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="qwen">
+  <header>
+    <h3>escobart · scène 99</h3>
+    <span class="chip v-qwen">Qwen mieux</span>
+    <span class="meta">costume + décor · 9.5 s serveur · 13.1 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/escobart_0099_klein.jpg" alt="Klein, scène 99" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/escobart_0099_qwen.jpg" alt="Qwen, scène 99" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_escobart_costume_003.jpg" alt="Référence de costume" loading="lazy"><img src="img/ref_escobart_decor_004.jpg" alt="Référence de décor" loading="lazy"></div>
+    <div class="txt"><p class="note">Qwen fidèle au décor et ajoute l&#x27;interlocuteur.</p><p class="prompt"><span>prompt</span> bldguy leaning forward across white tablecloth listening intently to older man gesturing subtly, formal dining room, gravity of moment clear</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="qwen">
+  <header>
+    <h3>escobart · scène 150</h3>
+    <span class="chip v-qwen">Qwen mieux</span>
+    <span class="meta">costume + décor · 9.3 s serveur · 12.7 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/escobart_0150_klein.jpg" alt="Klein, scène 150" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/escobart_0150_qwen.jpg" alt="Qwen, scène 150" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_escobart_costume_005.jpg" alt="Référence de costume" loading="lazy"><img src="img/ref_escobart_decor_008.jpg" alt="Référence de décor" loading="lazy"></div>
+    <div class="txt"><p class="note">Klein fait repousser des cheveux ; Qwen garde le crâne rasé (mais copie le pistolet).</p><p class="prompt"><span>prompt</span> bldguy in designer tracksuit and gold chains overlooking northern neighborhoods, concrete and brick buildings, territorial control</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="=">
+  <header>
+    <h3>escobart · scène 162</h3>
+    <span class="chip v-eq">Équivalent</span>
+    <span class="meta">costume seul · 5.8 s serveur · 8.0 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/escobart_0162_klein.jpg" alt="Klein, scène 162" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/escobart_0162_qwen.jpg" alt="Qwen, scène 162" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_escobart_costume_005.jpg" alt="Référence de costume" loading="lazy"></div>
+    <div class="txt"><p class="note">Les deux littéralisent mal « Avianca bomb » (logo écrit / bombe dessinée).</p><p class="prompt"><span>prompt</span> bldguy learning of Avianca bomb from radio in northern plaza, scale of violence escalating, gold chain visible, medium shot</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="=">
+  <header>
+    <h3>escobart · scène 220</h3>
+    <span class="chip v-eq">Équivalent</span>
+    <span class="meta">costume seul · 5.8 s serveur · 8.3 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/escobart_0220_klein.jpg" alt="Klein, scène 220" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/escobart_0220_qwen.jpg" alt="Qwen, scène 220" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_escobart_costume_007.jpg" alt="Référence de costume" loading="lazy"></div>
+    <div class="txt"><p class="note">Équivalent.</p><p class="prompt"><span>prompt</span> bldguy kneeling in farmhouse storage examining waterlogged cash stacks and scattered bills on concrete floor, rodent damage, medium shot</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="qwen">
+  <header>
+    <h3>escobart · scène 223</h3>
+    <span class="chip v-qwen">Qwen mieux</span>
+    <span class="meta">costume + décor · 9.1 s serveur · 12.9 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/escobart_0223_klein.jpg" alt="Klein, scène 223" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/escobart_0223_qwen.jpg" alt="Qwen, scène 223" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_escobart_costume_007.jpg" alt="Référence de costume" loading="lazy"><img src="img/ref_escobart_decor_011.jpg" alt="Référence de décor" loading="lazy"></div>
+    <div class="txt"><p class="note">Klein oublie le protagoniste ; Qwen le place dans le plan large.</p><p class="prompt"><span>prompt</span> bldguy approaching La Catedral on mountain, concrete walls and steel grilles visible, Medellín valley below, wide shot</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="qwen">
+  <header>
+    <h3>escobart · scène 271</h3>
+    <span class="chip v-qwen">Qwen mieux</span>
+    <span class="meta">costume + décor · 9.2 s serveur · 13.0 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/escobart_0271_klein.jpg" alt="Klein, scène 271" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/escobart_0271_qwen.jpg" alt="Qwen, scène 271" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_escobart_costume_009.jpg" alt="Référence de costume" loading="lazy"><img src="img/ref_escobart_decor_014.jpg" alt="Référence de décor" loading="lazy"></div>
+    <div class="txt"><p class="note">Qwen suit le prompt (dans la voiture, radio) ; Klein le met à moto.</p><p class="prompt"><span>prompt</span> bldguy in car hearing Escobar fleeing rooftops on radio, radio crackling with pursuit, motionless, knowing what unfolds across neighborhood, evening light fading, medium shot</p></div>
+  </div>
+</article>
+<article class="pair" data-verdict="=">
+  <header>
+    <h3>escobart · scène 284</h3>
+    <span class="chip v-eq">Équivalent</span>
+    <span class="meta">costume seul · 5.8 s serveur · 7.9 s mur</span>
+  </header>
+  <div class="imgs">
+    <figure><img src="img/escobart_0284_klein.jpg" alt="Klein, scène 284" loading="lazy"><figcaption>FLUX.2 Klein 4B</figcaption></figure>
+    <figure><img src="img/escobart_0284_qwen.jpg" alt="Qwen, scène 284" loading="lazy"><figcaption>Qwen-Image-Edit-2511</figcaption></figure>
+  </div>
+  <div class="foot">
+    <div class="refs"><img src="img/ref_escobart_costume_009.jpg" alt="Référence de costume" loading="lazy"></div>
+    <div class="txt"><p class="note">Équivalent, intérieur de voiture plus propre chez Qwen.</p><p class="prompt"><span>prompt</span> bldguy, bald man alone in the driver&#x27;s seat of a car at night, hunched forward, forehead resting on the steering wheel, both arms wrapped around the wheel, dim dashboard glow, dark empty street through the windshield, medium shot</p></div>
+  </div>
+</article></div>
+  </section>
+
+  <section aria-labelledby="style-h">
+    <div class="sechead">
+      <h2 id="style-h">Contre-épreuve 1 : la style bible</h2>
+      <p>Même modèle, même vitesse, seuls trois champs de <code>style.yaml</code> changent : un dessin animé moderne détaillé avec ombrage cel, une composition cinématographique et une lumière directionnelle. C'est le seul essai qui change franchement le rendu. Défauts restants : un clone du héros sur escobart 150 et du texte en charabia dans les bulles et enseignes.</p>
+    </div>
+    
+<div class="vrow" data-variant="style">
+  <p class="vlabel">video5 · scène 37 <span class="meta">Qwen, style revu : 6 s serveur</span></p>
+  <div class="imgs three">
+    <figure><img src="img/video5_0037_klein.jpg" alt="" loading="lazy"><figcaption>Klein</figcaption></figure>
+    <figure><img src="img/video5_0037_qwen.jpg" alt="" loading="lazy"><figcaption>Qwen, style actuel</figcaption></figure>
+    <figure><img src="img/style_video5_0037.jpg" alt="" loading="lazy"><figcaption>Qwen, style revu</figcaption></figure>
+  </div>
+</div>
+<div class="vrow" data-variant="style">
+  <p class="vlabel">video5 · scène 83 <span class="meta">Qwen, style revu : 9 s serveur</span></p>
+  <div class="imgs three">
+    <figure><img src="img/video5_0083_klein.jpg" alt="" loading="lazy"><figcaption>Klein</figcaption></figure>
+    <figure><img src="img/video5_0083_qwen.jpg" alt="" loading="lazy"><figcaption>Qwen, style actuel</figcaption></figure>
+    <figure><img src="img/style_video5_0083.jpg" alt="" loading="lazy"><figcaption>Qwen, style revu</figcaption></figure>
+  </div>
+</div>
+<div class="vrow" data-variant="style">
+  <p class="vlabel">video5 · scène 171 <span class="meta">Qwen, style revu : 6 s serveur</span></p>
+  <div class="imgs three">
+    <figure><img src="img/video5_0171_klein.jpg" alt="" loading="lazy"><figcaption>Klein</figcaption></figure>
+    <figure><img src="img/video5_0171_qwen.jpg" alt="" loading="lazy"><figcaption>Qwen, style actuel</figcaption></figure>
+    <figure><img src="img/style_video5_0171.jpg" alt="" loading="lazy"><figcaption>Qwen, style revu</figcaption></figure>
+  </div>
+</div>
+<div class="vrow" data-variant="style">
+  <p class="vlabel">escobart · scène 93 <span class="meta">Qwen, style revu : 6 s serveur</span></p>
+  <div class="imgs three">
+    <figure><img src="img/escobart_0093_klein.jpg" alt="" loading="lazy"><figcaption>Klein</figcaption></figure>
+    <figure><img src="img/escobart_0093_qwen.jpg" alt="" loading="lazy"><figcaption>Qwen, style actuel</figcaption></figure>
+    <figure><img src="img/style_escobart_0093.jpg" alt="" loading="lazy"><figcaption>Qwen, style revu</figcaption></figure>
+  </div>
+</div>
+<div class="vrow" data-variant="style">
+  <p class="vlabel">escobart · scène 150 <span class="meta">Qwen, style revu : 9 s serveur</span></p>
+  <div class="imgs three">
+    <figure><img src="img/escobart_0150_klein.jpg" alt="" loading="lazy"><figcaption>Klein</figcaption></figure>
+    <figure><img src="img/escobart_0150_qwen.jpg" alt="" loading="lazy"><figcaption>Qwen, style actuel</figcaption></figure>
+    <figure><img src="img/style_escobart_0150.jpg" alt="" loading="lazy"><figcaption>Qwen, style revu</figcaption></figure>
+  </div>
+</div>
+<div class="vrow" data-variant="style">
+  <p class="vlabel">escobart · scène 162 <span class="meta">Qwen, style revu : 6 s serveur</span></p>
+  <div class="imgs three">
+    <figure><img src="img/escobart_0162_klein.jpg" alt="" loading="lazy"><figcaption>Klein</figcaption></figure>
+    <figure><img src="img/escobart_0162_qwen.jpg" alt="" loading="lazy"><figcaption>Qwen, style actuel</figcaption></figure>
+    <figure><img src="img/style_escobart_0162.jpg" alt="" loading="lazy"><figcaption>Qwen, style revu</figcaption></figure>
+  </div>
+</div>
+  </section>
+
+  <section aria-labelledby="nl-h">
+    <div class="sechead">
+      <h2 id="nl-h">Contre-épreuve 2 : sans Lightning</h2>
+      <p>40 pas à cfg 4 au lieu de 4 pas à cfg 1 : un peu plus de détail et de figurants, rien de décisif, pour 91 à 156 s l'image au lieu de 6 à 9 s. Lightning reste le bon réglage.</p>
+    </div>
+    
+<div class="vrow" data-variant="nolightning">
+  <p class="vlabel">video5 · scène 171 <span class="meta">Qwen sans Lightning (40 pas) : 91 s serveur</span></p>
+  <div class="imgs three">
+    <figure><img src="img/video5_0171_klein.jpg" alt="" loading="lazy"><figcaption>Klein</figcaption></figure>
+    <figure><img src="img/video5_0171_qwen.jpg" alt="" loading="lazy"><figcaption>Qwen, style actuel</figcaption></figure>
+    <figure><img src="img/nolightning_video5_0171.jpg" alt="" loading="lazy"><figcaption>Qwen sans Lightning (40 pas)</figcaption></figure>
+  </div>
+</div>
+<div class="vrow" data-variant="nolightning">
+  <p class="vlabel">escobart · scène 99 <span class="meta">Qwen sans Lightning (40 pas) : 154 s serveur</span></p>
+  <div class="imgs three">
+    <figure><img src="img/escobart_0099_klein.jpg" alt="" loading="lazy"><figcaption>Klein</figcaption></figure>
+    <figure><img src="img/escobart_0099_qwen.jpg" alt="" loading="lazy"><figcaption>Qwen, style actuel</figcaption></figure>
+    <figure><img src="img/nolightning_escobart_0099.jpg" alt="" loading="lazy"><figcaption>Qwen sans Lightning (40 pas)</figcaption></figure>
+  </div>
+</div>
+<div class="vrow" data-variant="nolightning">
+  <p class="vlabel">escobart · scène 150 <span class="meta">Qwen sans Lightning (40 pas) : 156 s serveur</span></p>
+  <div class="imgs three">
+    <figure><img src="img/escobart_0150_klein.jpg" alt="" loading="lazy"><figcaption>Klein</figcaption></figure>
+    <figure><img src="img/escobart_0150_qwen.jpg" alt="" loading="lazy"><figcaption>Qwen, style actuel</figcaption></figure>
+    <figure><img src="img/nolightning_escobart_0150.jpg" alt="" loading="lazy"><figcaption>Qwen sans Lightning (40 pas)</figcaption></figure>
+  </div>
+</div>
+  </section>
+
+  <section aria-labelledby="cost-h">
+    <div class="sechead">
+      <h2 id="cost-h">Coût par vidéo</h2>
+      <p>270 plans × 1,5 = 405 images. 16 % des scènes de video5 et escobart ont une référence de décor, d'où un temps moyen pondéré de 9,0 s mur et 6,4 s serveur.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Poste</th><th>Séquentiel (pipeline actuel)</th><th>File pleine</th></tr></thead>
+        <tbody>
+          <tr><td>405 images</td><td class="n">61 min · 1,11 $</td><td class="n">43 min · 0,78 $</td></tr>
+          <tr><td>Références palier + lieux (~30 images)</td><td class="n">4,5 min · 0,08 $</td><td class="n">3 min · 0,06 $</td></tr>
+          <tr><td>Démarrage + téléchargement des 31 Go</td><td class="n">~4 min · 0,07 $</td><td class="n">~4 min · 0,07 $</td></tr>
+          <tr><td><b>Total, L40S secure à 1,09 $/h</b></td><td class="n"><b>≈ 1,25 $</b></td><td class="n"><b>≈ 0,95 $</b></td></tr>
+          <tr><td>Même vitesse sur une RTX 5090 community à 0,69 $/h</td><td class="n">≈ 0,80 $</td><td class="n">≈ 0,60 $</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="meta">L'écart mur/serveur (~2,7 s par image) vient des allers-retours vers le proxy Runpod au Texas et du sondage toutes les 0,5 s. La ligne 5090 est une extrapolation : les deux machines 5090 obtenues avaient un GPU en panne.</p>
+  </section>
+
+  <section aria-labelledby="todo-h">
+    <div class="sechead">
+      <h2 id="todo-h">Ce qu'il reste à régler</h2>
+    </div>
+    <ul class="todo">
+      <li><b>style.yaml</b><span>Le rendu « moche » vient d'abord d'ici. « children's picture book style », « minimal shading » et surtout « single subject, simple uncluttered composition » produisent des plans frontaux, vides, à un seul personnage. À réécrire, puis à tester sur Klein en local.</span></li>
+      <li><b>Références de costume (steps/refs.py)</b><span>Qwen recopie les accessoires de la référence : le pistolet de la référence escobart réapparaît sur des scènes où personne n'est armé, et la pose debout de face revient souvent. Demander des mains vides, sans arme ni objet, et une pose de trois quarts.</span></li>
+      <li><b>image_prompt.txt</b><span>Interdire les verbes de parole (« confessing words » donne des bulles en charabia), remplacer tout nom de figurant par sa description (« Hwang » a reçu le visage du héros) et éviter les formulations ambiguës comme « side by side ». L'interdiction des âges vient d'une dérive de Klein ; Qwen garde mieux le crâne rasé, mais je la garderais par prudence.</span></li>
+      <li><b>Contournements propres à Klein</b><span>Déjà neutralisés pour Qwen dans <code>providers/local.py</code> : réduction du décor à 34 % (Qwen redimensionne lui-même), ordre décor-puis-costume de la chaîne ReferenceLatent (Qwen nomme image 1 / image 2), mot <code>bldguy</code> (réécrit en « the bald man from image 1 »). Les 4 pas forcés de Klein ne concernent pas Qwen.</span></li>
+      <li><b>Infra</b><span>Volume réseau d'environ 35 Go (≈ 2,5 $/mois) pour ne pas retélécharger les poids à chaque vidéo ; deux workers sur l'étape images pour masquer la latence du proxy ; le proxy ComfyUI de Runpod est public et sans authentification, à n'ouvrir que le temps d'un run. <code>webui/server.py</code> ne connaît encore que <code>flux2</code>.</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="method-h">
+    <div class="sechead">
+      <h2 id="method-h">Méthode</h2>
+      <p>Qwen-Image-Edit-2511 fp8mixed (Apache 2.0), encodeur Qwen2.5-VL 7B fp8, LoRA lightx2v Lightning 4 pas, euler/simple, cfg 1, shift 3,1, latent vide 1344×768. ComfyUI 0.30.0 sur le template officiel Runpod CUDA 13, L40S 48 Go en secure cloud. La première image du banc est exclue des temps, ainsi qu'une image servie par le cache de ComfyUI. Qwen Image 2.1, plus récent, a été écarté : sa licence qwen-research ne couvre pas un usage commercial.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var buttons = document.querySelectorAll('.filters button');
+  var pairs = document.querySelectorAll('#pairs .pair');
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      buttons.forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+      var f = b.getAttribute('data-f');
+      pairs.forEach(function (p) { p.hidden = !(f === 'all' || p.getAttribute('data-verdict') === f); });
+    });
+  });
+})();
+</script>

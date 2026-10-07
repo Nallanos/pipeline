@@ -1,0 +1,74 @@
+[
+ {
+  "variant": "style",
+  "project": "video5",
+  "scene": 37,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\style\\video5\\0037.png",
+  "wall_s": 9.37,
+  "server_s": 5.786
+ },
+ {
+  "variant": "style",
+  "project": "video5",
+  "scene": 83,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\style\\video5\\0083.png",
+  "wall_s": 12.71,
+  "server_s": 9.154
+ },
+ {
+  "variant": "style",
+  "project": "video5",
+  "scene": 171,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\style\\video5\\0171.png",
+  "wall_s": 8.42,
+  "server_s": 5.753
+ },
+ {
+  "variant": "style",
+  "project": "escobart",
+  "scene": 93,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\style\\escobart\\0093.png",
+  "wall_s": 8.81,
+  "server_s": 5.787
+ },
+ {
+  "variant": "style",
+  "project": "escobart",
+  "scene": 150,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\style\\escobart\\0150.png",
+  "wall_s": 12.38,
+  "server_s": 9.076
+ },
+ {
+  "variant": "style",
+  "project": "escobart",
+  "scene": 162,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\style\\escobart\\0162.png",
+  "wall_s": 7.79,
+  "server_s": 5.775
+ },
+ {
+  "variant": "nolightning",
+  "project": "video5",
+  "scene": 171,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\nolightning\\video5\\0171.png",
+  "wall_s": 94.1,
+  "server_s": 90.93
+ },
+ {
+  "variant": "nolightning",
+  "project": "escobart",
+  "scene": 99,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\nolightning\\escobart\\0099.png",
+  "wall_s": 157.67,
+  "server_s": 153.84
+ },
+ {
+  "variant": "nolightning",
+  "project": "escobart",
+  "scene": 150,
+  "image": "C:\\Users\\nalla\\Documents\\pipeline\\qwen_test\\nolightning\\escobart\\0150.png",
+  "wall_s": 160.0,
+  "server_s": 156.124
+ }
+]
