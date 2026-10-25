@@ -4,28 +4,55 @@
 # qualité dominant. Ce fichier est ce qui la produit : il est concaténé à chaque
 # prompt image, et il est le contexte principal donné au LLM à l'étape 4.
 
-name: trait-encre-monochrome
+name: cartoon-plat-sepia
 
 # Le trait. Volontairement simple : SDXL est faible sur l'adhérence aux prompts
 # complexes, et un style graphique épuré ne la sollicite pas (SPEC §6).
 # Resserré pour tenir dans le budget ~75 tokens de l'encodeur CLIP une fois
 # palette + cadrage + lumière + sujet ajoutés (voir full_prompt() dans style.py).
+#
+# Remplace l'ancien rendu encre monochrome (voir historique git) pour matcher
+# les vidéos de référence — cartoon plat, contours noirs, cel shading. Valeurs
+# utilisées pour tous les essais de character-consistency-report.md (B1-B3) et
+# qui donnent les images de preuve du rapport ; appliquées ici le 15/08 sur
+# décision explicite. Les images des projets existants deviennent caduques
+# (relancer avec --force images si besoin).
+# Formulation « explicite » retenue apres comparaison A/B sur FLUX.2 (19/08) :
+# nommer ce qu'on NE veut pas (degrade, texture, rendu peint) donne des aplats
+# nettement plus propres que des adjectifs positifs seuls. FLUX suit les
+# interdictions, la ou SDXL les ignorait.
+#
+# La longueur n'est plus un probleme : l'encodeur de FLUX.2 est un Qwen3-4B,
+# pas le CLIP 77 tokens de SDXL. La contrainte de concision notee plus haut ne
+# vaut que pour le provider sdxl.
 medium: >-
-  editorial ink illustration, clean linework, sparse hatching, flat fills
+  simple flat 2D cartoon illustration, uniform thin black outline,
+  large areas of solid flat colour, no gradients, no texture,
+  no painterly rendering, minimal shading, children's picture book style
 
-# « Noir et blanc + une touche de couleur » était une consigne contradictoire :
-# SDXL la résout différemment à chaque seed, parfois en colorisant toute
-# l'image (observé sur un run réel — voir le journal du 14/08). Le monochrome
-# strict est plus facile à tenir sur 300 générations indépendantes qu'une
-# règle avec exception.
+# Le sépia seul rendait l'ensemble d'un beige monotone (constaté sur
+# lighthouse_test, 19/08) : les références ont de VRAIES couleurs — uniformes
+# rouges, robes bleues, champs verts — simplement peu saturées. « earth tones »
+# tout court poussait SDXL vers le monochrome ; il faut nommer la couleur pour
+# qu'elle existe.
 palette: >-
-  strict black and white, off-white paper, deep indigo ink only
+  soft muted colour palette, warm skin tones, distinct local colours,
+  gently desaturated, not monochrome
 
+# « mid-shot » a été retiré ici : full_prompt() concatène ce champ à CHAQUE
+# prompt, donc il contredisait les cadrages que image_prompt.txt demande
+# maintenant de varier (un « close up portrait » suivi de « mid-shot »).
+# Le cadrage appartient au prompt de scène ; ce champ ne garde que ce qui est
+# vrai de tous les plans.
 framing: >-
-  single subject, mid-shot, simple composition, subject off-centre
+  single subject, simple uncluttered composition
 
+# « gentle ambient shading » a ete retire : il contredisait le « minimal
+# shading » de medium ci-dessus. Deux consignes opposees dans le meme prompt,
+# c'est le modele qui tranche, pas nous -- meme piege que le « mid-shot » que
+# framing imposait a tous les plans avant le 19/08.
 lighting: >-
-  soft even daylight, no dramatic contrast
+  soft even lighting, clear readable shapes
 
 # Suffixe ajouté tel quel à chaque prompt.
 suffix: >-
@@ -35,9 +62,9 @@ suffix: >-
 # Ciblés sur les dérives réellement observées plutôt que génériques : un
 # négatif trop long dilue autant que le positif (budget ~75 tokens CLIP).
 negative: >-
-  color, colored, vibrant, saturated colors, painting, oil painting,
-  watercolor, photorealistic, 3d render, cgi, text, letters, watermark,
-  signature, cluttered, busy background, blurry, low quality
+  photorealistic, 3d render, cgi, saturated colors, harsh contrast,
+  text, letters, watermark, signature, blurry, low quality,
+  extra limbs, deformed, cluttered background
 
 # Résolution native SDXL. Le rendu génère en 2x la cible pour laisser de la
 # marge au zoompan (voir ffmpeg.py).
@@ -50,7 +77,15 @@ draft:
   steps: 12
 
 # cfg à 5.5 laissait trop de liberté au modèle par rapport à ce qu'on demande
-# (dérive vers son propre a priori — dont la couleur). 6.0-6.5 est la zone où
-# il colle davantage au prompt sans cramer les contrastes ni les hachures.
-steps: 30
+# (dérive vers son propre a priori). 6.0-6.5 est la zone où il colle davantage
+# au prompt sans cramer les contrastes — valeur conservée telle quelle pour le
+# nouveau style (medium/palette/lighting ci-dessus), pas revalidée
+# spécifiquement dessus.
+# 30 pas laissaient les mains a l'etat de moignon et cassaient la geometrie
+# des decors (escaliers, etablis) -- constate sur lighthouse_test, 19/08.
+# A 50 pas les doigts se separent et les arriere-plans redeviennent lisibles.
+# Teste aussi : une 2e passe de raffinement a denoise 0.4 sans agrandissement
+# du latent n'apporte rien (elle re-rend la meme image). Cout : ~23 s/image
+# au lieu de ~15 s.
+steps: 50
 cfg: 6.5

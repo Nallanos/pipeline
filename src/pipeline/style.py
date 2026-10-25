@@ -44,8 +44,15 @@ class StyleConfig:
 
         `suffix` n'est délibérément pas concaténé ici : il ne fait que répéter
         des interdictions déjà dans `negative` (texte, filigrane, signature),
-        et chaque mot en trop rapproche de la limite ~75 tokens de l'encodeur
-        CLIP — au-delà, la fin du prompt est tronquée en silence.
+        et n'apporterait rien.
+
+        Correction (15/08) : l'affirmation précédente disait que dépasser la
+        limite ~75 tokens de l'encodeur CLIP tronquait la fin du prompt en
+        silence. Faux pour ComfyUI — vérifié dans `comfy/sd1_clip.py` (fonction
+        de tokenisation) : au-delà de 77 tokens, ComfyUI découpe le prompt en
+        plusieurs segments encodés séparément (chunking), il ne coupe rien.
+        `suffix` reste exclu pour la raison ci-dessus, pas par crainte d'une
+        troncature qui n'existe pas.
         """
         return f"{subject}. {self.medium}. {self.palette}. {self.framing}. {self.lighting}"
 

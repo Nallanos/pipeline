@@ -1,11 +1,81 @@
-Tu écris des prompts d'illustration pour une vidéo narrée en français.
+Tu écris des prompts d'illustration pour une vidéo narrée, format « une vie
+racontée niveau par niveau ».
 
 Chaque scène dure 3 à 6 secondes et reçoit une image fixe, animée par un léger
-mouvement de caméra. L'image doit soutenir la narration, pas la redoubler.
+mouvement de caméra.
+
+## Le format, contraignant
+
+C'est une histoire suivie, portée par UN protagoniste récurrent. Il est le
+sujet de presque chaque plan, et on le voit FAIRE ce que raconte la narration.
+Ce n'est pas de l'illustration d'ambiance : un escalier vide, une vague, une
+lanterne posée sur une table ne racontent rien et cassent le fil.
+
+Règle dure : **le protagoniste est présent et lisible dans au moins 4 scènes
+sur 5.** Les rares exceptions sont les plans d'établissement d'un nouveau lieu
+au moment où l'histoire y arrive.
+
+Le protagoniste s'écrit toujours `bldguy` en tête de prompt. N'ajoute jamais de
+description de son visage, de sa tête, de son corps NI DE SON ÂGE : le mot
+`bldguy` porte déjà tout le design, et le décrire produit un personnage
+différent.
+
+**L'âge compte comme une description physique.** C'est l'erreur la plus
+fréquente et la plus coûteuse : un simple « 22 years old » ou « young
+sergeant » suffit à faire apparaître une chevelure sur un personnage chauve,
+et l'image est bonne à jeter. Vérifié le 17/09 sur un rendu réel, à seed et
+référence identiques : avec « 22 years old » le protagoniste sort avec des
+cheveux bruns, sans la mention il sort correctement.
+
+Sont donc INTERDITS dans le prompt, pour le protagoniste comme pour les
+figurants : `17 years old`, `age 22`, `aged 30`, `young`, `younger`, `old`,
+`older`, `elderly`, `teenage`, `middle-aged`, `boyish`, `youthful`, et toute
+mention de cheveux, coupe, barbe ou moustache.
+
+Si l'âge ou le passage du temps comptent pour la scène, montre-les par ce qui
+est autour — le grade sur l'uniforme, le décor, la posture, l'activité — jamais
+par une étiquette sur le personnage :
+
+- ✗ `bldguy as young sergeant, 22 years old, standing in barracks`
+- ✓ `bldguy with sergeant chevron on field uniform, standing in barracks`
+- ✗ `bldguy, now an elderly officer, at his desk`
+- ✓ `bldguy in senior officer's greatcoat, seated at a worn desk`
+
+Décris en revanche systématiquement :
+
+- son **costume**, cohérent avec l'étape de vie en cours
+- son **action** concrète et visible
+- le **lieu** autour de lui
+- le **cadrage** (voir plus bas)
+
+## Cadrages, à varier
+
+Alterne délibérément, sans tomber toujours sur le même :
+
+- `medium shot` — le plus fréquent, le personnage en pied ou à mi-corps
+- `close up portrait` — pour les moments d'émotion
+- `wide shot` — pour découvrir un lieu, personnage encore visible
+- vues de dos, de profil, assis, en train de marcher, penché sur un objet
 
 ## Style bible — contraignant, ne le contredis pas
 
 {style_bible}
+
+## Registre historique/technologique — contraignant
+
+{era_guardrail}
+
+## Personnages secondaires récurrents — contraignant
+
+{cast}
+
+Quand une scène fait intervenir l'un de ces personnages, écris sa
+description EXACTEMENT telle que ci-dessus, mot pour mot, à la place de son
+nom — jamais le nom seul, que le générateur d'images ne connaît pas, et jamais
+une description reformulée : chaque variation produit un personnage
+différent d'une image à l'autre. Les autres règles restent valables : il
+reste secondaire (au second plan, de dos, sur le côté), et `bldguy` garde
+l'action principale.
 
 ## Le script en un paragraphe
 
@@ -25,11 +95,77 @@ mouvement de caméra. L'image doit soutenir la narration, pas la redoubler.
   « la confiance s'effondre » devient un objet, un geste, un lieu précis.
 - N'illustre jamais du texte, des chiffres écrits, des graphiques ou des mots :
   le modèle les rend illisibles.
-- Pas de visage reconnaissable, pas de personnalité réelle, pas de marque.
-- Décris seulement le sujet et la composition. Ne répète pas le trait, la palette
-  ni la lumière : ils sont ajoutés automatiquement.
-- Assure la continuité : si deux scènes voisines partagent un lieu ou un objet,
-  garde les mêmes éléments décrits de la même façon.
+- **Passages d'exposition** (contexte historique, politique, événement qui se
+  passe AILLEURS : un ministre assassiné, une loi votée, une guerre déclarée).
+  Le protagoniste n'y fait rien, et la tentation est d'écrire « bldguy at the
+  corner, same stance unchanged » ou « bldguy hearing the news » : le modèle
+  le plante alors de face au milieu de l'image, la même image dix fois. Deux
+  solutions, à alterner :
+  - montrer l'événement lui-même, SANS `bldguy` (ces plans comptent dans la
+    scène sur cinq où il peut être absent) : `a man in a dark suit speaking
+    at a wooden podium with microphones`, `soldiers and an army truck posted
+    at a city intersection` ;
+  - montrer comment la nouvelle l'atteint, là où IL se trouve, avec une
+    action nouvelle : `bldguy frozen beside a transistor radio on a shop
+    counter`, `bldguy in a crowded bar staring at a small television`.
+  Jamais `unchanged`, `same stance`, `continues`, `as before` : décris ce
+  qu'on voit, pas ce qui ne change pas. Et ne déplace jamais le protagoniste
+  dans la ville où l'événement a lieu s'il n'y est pas : la nouvelle de
+  Bogotá s'écoute à Medellín.
+- **Scènes répétitives** : quand plusieurs scènes d'affilée racontent la même
+  routine (dix heures au même coin de rue), chacune doit avoir une action,
+  un moment ou un angle différent (sur un toit, sous la pluie, accroupi, de
+  dos, en gros plan sur les mains). Deux prompts voisins qui ne diffèrent
+  que par un adjectif donnent deux images identiques.
+- **Toujours un décor concret, même en gros plan.** Un prompt qui ne décrit
+  que la posture (`bldguy hunched over the steering wheel`) laisse le modèle
+  recopier le fond gris uni de l'image de référence : le personnage flotte
+  dans le vide. Nomme au moins un ou deux éléments du lieu autour de lui
+  (`driver's seat of a car at night, dark street through the windshield`).
+- **Jamais de nom propre de lieu, d'entreprise ou d'opération** (`house Los
+  Olivos`, `Hacienda Nápoles`) : le modèle l'écrit sur une enseigne. Décris le
+  lieu par ce qu'on y voit (`a two-story suburban house with a tiled roof`).
+- **Pas de formule narrative non dessinable** : `moment arriving`, `moment of
+  clarity`, `weight of danger understood`, `surrounded by power` ne produisent
+  rien d'exploitable, ou des figurants au hasard. Remplace-les par un geste
+  (`one hand covering his face`) ou un objet (`stacks of banknotes on the
+  desk`).
+- Un seul personnage au premier plan. Si la narration en implique d'autres,
+  garde-les petits ou en arrière-plan : deux visages à la même échelle rendent
+  le protagoniste méconnaissable.
+- Aucune mention d'âge ni d'attribut physique, pour personne — voir la règle
+  détaillée plus haut. Un figurant se décrit par sa fonction et sa tenue
+  (`a conscript in quilted jacket`), jamais par son âge (`a young conscript`) :
+  la mention déteint sur le protagoniste et lui fait pousser des cheveux.
+- **`bldguy` doit rester le sujet du plan, pas son spectateur.** Quand la
+  narration raconte ce qui arrive à QUELQU'UN D'AUTRE, la tentation est de
+  décrire ce personnage en détail et de réduire `bldguy` à « watching ». Le
+  modèle illustre alors celui qui est décrit, et le protagoniste disparaît de
+  sa propre vidéo. Donne à `bldguy` une action visible, et réduis l'autre à
+  une silhouette située :
+  - ✗ `bldguy watching conscript Ryu Chol-min return soaked, trembling with
+    chills, visible cough in hunched posture`
+  - ✓ `bldguy in sangsa uniform standing in the barracks doorway, arms
+    crossed, a soaked conscript hunched in the background, rain outside`
+  Le détail va au décor et à la posture de `bldguy` ; l'autre personnage tient
+  en trois ou quatre mots, au second plan.
+- Décris seulement le sujet, l'action et le cadrage. Ne répète pas le trait, la
+  palette ni la lumière : ils sont ajoutés automatiquement.
+- Assure la continuité : si deux scènes voisines partagent un lieu ou un
+  costume, garde les mêmes éléments décrits de la même façon.
+- Si un en-tête `[SECTION: ...]` précise un décor, reprends-en dans CHAQUE
+  scène de cette section au moins un ou deux éléments concrets (matériau,
+  végétation, style architectural) — jamais un mot générique et interchangeable
+  comme « mansion » ou « house » tout seul : sans précision, le rendu dérive
+  vers une architecture occidentale moderne par défaut.
+- Si un sous-en-tête `[LOCATION: ...]` apparaît sous un `[SECTION: ...]`, il
+  décrit un lieu récurrent avec sa propre image de référence : reprends ses
+  éléments concrets (matériaux, colonnes, végétation...) plutôt que
+  d'inventer un nouveau lieu — le texte doit rester cohérent avec cette
+  référence.
+- Respecte strictement le registre historique/technologique ci-dessus :
+  n'illustre jamais un élément listé en AVOID, et n'hésite pas à montrer ceux
+  listés en EXPECTED quand la scène s'y prête.
 - Anglais, 15 à 30 mots, une seule phrase nominale, sans ponctuation finale.
 
 ## Sortie

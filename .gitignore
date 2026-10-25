@@ -1,5 +1,6 @@
 projects/
 models/
+thumbnails/
 .venv/
 __pycache__/
 *.pyc
@@ -8,3 +9,21 @@ __pycache__/
 .mypy_cache/
 .env
 *.egg-info/
+
+# File de nuit du webui (état local)
+queue.json
+timings.json
+
+# Images générées (revues, bancs d'essai pleine taille) : régénérables, trop
+# lourdes pour git. Les pages de comparaison (report/) restent versionnées.
+review_batches/
+qwen_test/*/
+!qwen_test/report/
+!qwen_test/bakeoff/
+qwen_test/bakeoff/*/
+!qwen_test/bakeoff/report/
+
+# Journaux et réglages d'éditeur locaux
+*.log
+.obsidian/
+.venv.*/

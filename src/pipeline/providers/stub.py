@@ -18,12 +18,30 @@ import textwrap
 from pathlib import Path
 
 from PIL import Image, ImageDraw
+from PIL.PngImagePlugin import PngInfo
 
 from ..style import StyleConfig
+
+# Clé tEXt posée dans le PNG quand ce provider sert de REPLI (et pas de
+# provider principal). C'est le seul moyen fiable de reconnaître un bouchon
+# plus tard : il s'écrit sur le même chemin `NNNN.png` qu'une vraie image, et
+# `images.json` ne suffit pas — une scène interrompue par le coupe-circuit
+# n'y a aucune entrée, et rien ne distinguait alors son vieux bouchon d'une
+# image réussie. Vu en pratique (16/09, video5) : 49 bouchons du run
+# précédent auraient été gardés tels quels par la reprise.
+FALLBACK_MARKER = "pipeline-fallback"
 
 
 class StubProvider:
     name = "stub"
+
+    def __init__(self, fallback: bool = False) -> None:
+        # `fallback=True` seulement quand images.py s'en sert comme repli
+        # d'un vrai provider. En provider principal (PIPELINE_PROVIDER=stub,
+        # le défaut, utilisé pour vérifier durées et montage sans GPU) les
+        # images ne sont PAS marquées : elles sont le résultat attendu du
+        # run, pas des trous, et doivent survivre à une reprise.
+        self.fallback = fallback
 
     def generate(
         self,
@@ -31,6 +49,7 @@ class StubProvider:
         style: StyleConfig,
         seed: int,
         reference: Path | None = None,
+        decor_reference: Path | None = None,
     ) -> bytes:
         # Teinte dérivée du seed : deux scènes voisines sont visuellement
         # distinctes, donc une coupe manquée se voit immédiatement.
@@ -55,6 +74,10 @@ class StubProvider:
         wrapped = textwrap.fill(prompt, width=max(20, style.width // 14))
         draw.multiline_text((margin * 2, margin * 3), wrapped, fill=ink, spacing=6)
 
+        metadata = PngInfo()
+        if self.fallback:
+            metadata.add_text(FALLBACK_MARKER, "1")
+
         buffer = io.BytesIO()
-        image.save(buffer, format="PNG")
+        image.save(buffer, format="PNG", pnginfo=metadata)
         return buffer.getvalue()

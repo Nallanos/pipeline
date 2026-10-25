@@ -7,9 +7,20 @@ décalées d'une demi-phrase. Ne pas ajouter d'autres tests ici (SPEC §8).
 
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
 import pytest
 
-from pipeline.alignment import Alignment, WhisperWord, check_invariant_a, reconcile
+from pipeline.alignment import (
+    PONCTUATION_MAX_MS,
+    Alignment,
+    WhisperWord,
+    check_invariant_a,
+    check_plausible,
+    reconcile,
+)
+from pipeline.ffmpeg import title_card_command
 from pipeline.project import normalize
 
 SCRIPT = (
@@ -219,3 +230,107 @@ def test_seed_deterministe_entre_processus() -> None:
     assert seed_for("demo", 0) == seed_for("demo", 0)
     assert seed_for("demo", 0) != seed_for("demo", 1)
     assert seed_for("demo", 0) != seed_for("autre", 0)
+
+
+def test_ponctuation_ne_capte_pas_le_temps_des_voisins() -> None:
+    """Cas réel (19/09) : un `»` portait 4,8 s, ses 28 voisins 40 ms chacun.
+
+    Les tokens de ponctuation n'existent dans aucune transcription — Whisper
+    ne les produit jamais — donc ils ne peuvent pas être ancrés. Quand l'un
+    d'eux tombe sur un long segment, il absorbe le temps de tout le bloc et
+    `check_plausible` refuse l'alignement, à juste titre.
+    """
+    script = "il pose la montre « votre moyenne elle est sur combien » silence il repart"
+    mots = script.split()
+    # Whisper ne transcrit ni les guillemets ni « moyenne », et place un long
+    # silence là où tombe le guillemet fermant.
+    transcription = [
+        WhisperWord(text="il", start_ms=0, end_ms=200),
+        WhisperWord(text="pose", start_ms=200, end_ms=500),
+        WhisperWord(text="la", start_ms=500, end_ms=650),
+        WhisperWord(text="montre", start_ms=650, end_ms=1000),
+        WhisperWord(text="silence", start_ms=6000, end_ms=6500),
+        WhisperWord(text="il", start_ms=6500, end_ms=6700),
+        WhisperWord(text="repart", start_ms=6700, end_ms=7000),
+    ]
+    alignment = reconcile(mots, transcription, audio_ms=7000)
+
+    check_invariant_a(alignment, script)
+    check_plausible(alignment)  # ne doit pas lever
+
+    for mot, duree in zip(alignment.words, alignment.durations_ms, strict=True):
+        if not any(c.isalnum() for c in mot):
+            assert duree <= PONCTUATION_MAX_MS, (
+                f"le token {mot!r} capte {duree} ms, il devrait être borné"
+            )
+
+
+def test_carton_supporte_les_apostrophes() -> None:
+    """Cas réel (19/09) : « Niveau six : tireur d'élite » cassait le rendu.
+
+    Chaque caractère du carton est un `text='X'` séparé dans une chaîne de
+    drawtext, et ffmpeg n'autorise AUCUN échappement à l'intérieur de quotes
+    simples : `\'`, `'\''` et le texte sans quotes échouent tous. La commande
+    ne doit donc plus contenir d'apostrophe droite dans un `text=`.
+    """
+    commande = title_card_command("Niveau six : tireur d'élite", Path("x.mp4"), 35)
+    filtre = next(a for a in commande if "drawtext" in a)
+
+    textes = re.findall(r":text='([^']*)'", filtre)
+    assert textes, "aucun texte trouvé dans le filtre"
+    assert "'" not in "".join(textes), "une apostrophe droite subsiste dans le filtre"
+    assert "\u2019" in filtre, "l'apostrophe doit être remplacée par sa forme typographique"
+
+
+def test_remap_for_render_sans_troncature_ni_carton() -> None:
+    """Cas simple : une seule scène, aucun carton — juste la division par SPEED."""
+    from pipeline.subtitles import Ligne, remap_for_render
+
+    lignes = [Ligne(1000, 2000, "bonjour")]
+    breakpoints = [(0, 5000, 0)]
+    out = remap_for_render(lignes, breakpoints, speed=1.25)
+    assert out == [Ligne(800, 1600, "bonjour")]
+
+
+def test_remap_for_render_avec_troncature() -> None:
+    """L'intro est coupée (vidéo commence au 1er palier) : une ligne avant la
+    coupure disparaît, une ligne après est recalée sur le zéro du fichier."""
+    from pipeline.subtitles import Ligne, remap_for_render
+
+    lignes = [
+        Ligne(0, 500, "intro coupée"),
+        Ligne(10_000, 11_000, "premier mot du palier 1"),
+    ]
+    # Seule la 2e scène (à partir de 10000ms absolu) est retenue, et elle
+    # atterrit au tout début du fichier rendu (position 0).
+    breakpoints = [(10_000, 20_000, 0)]
+    out = remap_for_render(lignes, breakpoints, speed=1.0)
+    assert len(out) == 1
+    assert out[0].texte == "premier mot du palier 1"
+    assert out[0].start_ms == 0
+    assert out[0].end_ms == 1000
+
+
+def test_remap_for_render_avec_carton_insere() -> None:
+    """Un carton parlé de 1500ms est inséré avant la 2e scène : tout ce qui
+    la suit doit être décalé d'autant dans le fichier rendu, alors que rien
+    ne bouge à l'échelle ABSOLUE du script (alignment.json)."""
+    from pipeline.subtitles import Ligne, remap_for_render
+
+    lignes = [
+        Ligne(0, 1000, "scène 1"),
+        Ligne(5000, 6000, "scène 2, juste après le carton"),
+    ]
+    # scène 1 : absolu [0, 5000) -> position vidéo 0
+    # scène 2 : absolu [5000, 10000) -> position vidéo 5000 + 1500 (carton)
+    breakpoints = [(0, 5000, 0), (5000, 10_000, 6500)]
+    out = remap_for_render(lignes, breakpoints, speed=1.0)
+    assert out[0] == Ligne(0, 1000, "scène 1")
+    assert out[1] == Ligne(6500, 7500, "scène 2, juste après le carton")
+
+
+def test_remap_for_render_ligne_vide() -> None:
+    """Aucune scène retenue -> liste vide, pas d'exception."""
+    from pipeline.subtitles import Ligne, remap_for_render
+
+    assert remap_for_render([Ligne(0, 100, "x")], [], speed=1.0) == []

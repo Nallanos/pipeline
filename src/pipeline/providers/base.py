@@ -23,4 +23,5 @@ class ImageProvider(Protocol):
         style: StyleConfig,
         seed: int,
         reference: Path | None = None,
+        decor_reference: Path | None = None,
     ) -> bytes: ...

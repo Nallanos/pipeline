@@ -27,6 +27,7 @@ from .project import write_atomic
 # Plancher de durée d'un mot, appliqué par la passe de réparation monotone.
 # Un mot de durée nulle ou négative produirait une scène de durée nulle plus
 # loin dans le pipeline, donc une image jamais affichée.
+PONCTUATION_MAX_MS = 400  # au-delà, un token non prononcé a capté le temps d'un voisin
 MIN_WORD_MS = 40
 
 
@@ -170,6 +171,8 @@ def reconcile(
         span[1] = max(span[1], span[0] + MIN_WORD_MS)
         prev_end = span[1]
 
+    _rendre_le_temps_de_la_ponctuation(spans, script_words)
+
     durations = [end - start for start, end in spans]
     gaps = [spans[0][0]] + [spans[i][0] - spans[i - 1][1] for i in range(1, len(spans))]
     total = spans[-1][1]
@@ -181,6 +184,52 @@ def reconcile(
         total_ms=total,
         audio_ms=max(audio_ms, total),
     )
+
+
+def _rendre_le_temps_de_la_ponctuation(
+    spans: list[list[int]], script_words: list[str]
+) -> None:
+    """Rend aux mots voisins le temps capté par un token non prononcé.
+
+    `«`, `»`, `?`, `:` sont des mots pour le script mais n'existent dans aucune
+    transcription : Whisper ne les produit jamais. Ils ne peuvent donc pas être
+    ancrés correctement, et il arrive qu'un d'eux tombe sur un long segment et
+    absorbe plusieurs secondes pendant que ses voisins, faute d'ancrage, sont
+    tassés à `MIN_WORD_MS`.
+
+    Vu en pratique (19/09) sur un script dialogué : un `»` portait 4 840 ms
+    quand les 28 mots qui le précédaient avaient 40 ms chacun — soit 97
+    caractères/seconde, quatre fois le débit réel, ce que `check_plausible`
+    refusait à juste titre.
+
+    On borne donc la durée d'un token non prononcé et on redonne l'excédent
+    aux mots collés au plancher qui le précèdent, au prorata de leur longueur.
+    Les bornes du bloc ne bougent pas : rien n'est décalé en dehors.
+    """
+    for i, mot in enumerate(script_words):
+        if any(c.isalnum() for c in mot):
+            continue  # un vrai mot, il a le droit de durer
+        duree = spans[i][1] - spans[i][0]
+        if duree <= PONCTUATION_MAX_MS:
+            continue
+
+        # Les mots juste avant qui sont au plancher : ce sont eux qu'on a
+        # privés de leur temps.
+        debut = i
+        while debut > 0 and spans[debut - 1][1] - spans[debut - 1][0] <= MIN_WORD_MS:
+            debut -= 1
+        if debut == i:
+            continue
+
+        excedent = duree - PONCTUATION_MAX_MS
+        poids = [len(script_words[k]) + 1 for k in range(debut, i)]
+        total = sum(poids)
+        curseur = spans[debut][0]
+        for k, poids_k in enumerate(poids):
+            part = MIN_WORD_MS + excedent * poids_k // total
+            spans[debut + k] = [curseur, curseur + part]
+            curseur += part
+        spans[i] = [curseur, curseur + PONCTUATION_MAX_MS]
 
 
 def check_plausible(alignment: Alignment, window: int = 25, tolerance: float = 4.0) -> None:

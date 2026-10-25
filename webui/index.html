@@ -1,0 +1,1459 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Pipeline — panneau de contrôle</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    background: #14161a; color: #e8e8e8; margin: 0; min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; gap: 12px; padding: 14px 24px;
+    border-bottom: 1px solid #2a2e37; position: sticky; top: 0; background: #14161a; z-index: 5;
+  }
+  header a { color: #8a8f9a; text-decoration: none; font-size: 13px; }
+  header a:hover { color: #e8e8e8; }
+  header .crumb { color: #4a4f5a; }
+  main { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: #8a8f9a; margin: 24px 0 10px; }
+  p.sub { color: #8a8f9a; font-size: 13px; margin: 0 0 20px; }
+
+  /* --- Dashboard --- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .card {
+    background: #1b1e24; border: 1px solid #2a2e37; border-radius: 12px;
+    cursor: pointer; position: relative; overflow: hidden;
+    transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+  }
+  .card:hover {
+    border-color: #3a5fd9; transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0,0,0,.4);
+  }
+  .card .cover {
+    height: 130px; background: linear-gradient(160deg, #262a33, #1b1e24);
+    background-size: cover; background-position: center;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card .cover-placeholder {
+    font-size: 34px; font-weight: 700; color: #3a3f4a; letter-spacing: .02em;
+  }
+  .card .status-pill {
+    position: absolute; top: 10px; left: 10px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .03em; padding: 4px 10px; border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.35);
+  }
+  .status-pill.running { background: #3a5fd9; color: white; animation: pillpulse 1.4s ease-in-out infinite; }
+  .status-pill.scheduled { background: #e0b34d; color: #2a1e00; }
+.status-pill.queued { background: #7a5fd9; color: white; }
+  .status-pill.done { background: #2e7d4f; color: #d9ffe6; }
+  .queue-panel { background: #15171c; border: 1px solid #262a33; border-radius: 10px; padding: 14px 16px; margin: 10px 0 22px; }
+  .queue-panel .qhead { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .queue-panel .qhead h2 { margin: 0 auto 0 0; }
+  .queue-item { display: flex; gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid #22252d; font-size: 13px; }
+  .queue-item:first-of-type { border-top: none; }
+  .queue-item .qid { font-weight: 600; min-width: 120px; cursor: pointer; }
+  .queue-item .qmeta { color: #8a90a0; font-size: 12px; margin-right: auto; }
+  .queue-item button { padding: 2px 8px; font-size: 12px; }
+  .qstatus { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 3px 8px; border-radius: 12px; }
+  .qstatus.pending { background: #3a3f4a; color: #c4c8d0; }
+  .qstatus.running { background: #3a5fd9; color: white; }
+  .qstatus.done { background: #2e7d4f; color: #d9ffe6; }
+  .qstatus.failed { background: #7a2f2f; color: #ffd9d9; }
+  .status-pill.idle { background: #3a3f4a; color: #c4c8d0; }
+  @keyframes pillpulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+  .card .del {
+    position: absolute; top: 8px; right: 8px; z-index: 2;
+    background: rgba(10,11,14,.6); border: none; color: #d8dbe2;
+    width: 24px; height: 24px; border-radius: 50%; font-size: 15px;
+    line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .card .del:hover { background: #7a2f2f; color: #fff; }
+  .card-body { padding: 12px 14px 14px; }
+  .card .id { font-weight: 600; font-size: 14px; margin-bottom: 8px; word-break: break-all; }
+  .card .badges { display: flex; flex-wrap: wrap; gap: 4px; }
+  .badge { font-size: 10px; background: #262a33; color: #8a8f9a; padding: 2px 7px; border-radius: 10px; }
+  .badge.on { background: #1f3a2a; color: #6fd18a; }
+  .card.new {
+    display: flex; align-items: center; justify-content: center; color: #6a7080;
+    border-style: dashed; font-size: 14px; min-height: 180px;
+  }
+  .card.new:hover { color: #e8e8e8; border-color: #3a5fd9; transform: none; box-shadow: none; }
+
+  /* --- Forms --- */
+  label { display: block; font-size: 13px; color: #b8bcc4; margin: 12px 0 4px; }
+  input[type=text], input[type=password], select {
+    width: 100%; background: #14161a; border: 1px solid #333844;
+    color: #e8e8e8; border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: inherit;
+  }
+  button {
+    background: #3a5fd9; color: white; border: none; border-radius: 6px;
+    padding: 9px 14px; font-size: 13px; cursor: pointer; margin-top: 10px;
+  }
+  button:hover { background: #4a6fe9; }
+  button:disabled { background: #333844; cursor: not-allowed; }
+  button.secondary { background: #2a2e37; }
+  button.secondary:hover { background: #383d48; }
+  .row { display: flex; gap: 10px; align-items: flex-start; }
+  .row > label { flex: 1; }
+  .row.check { align-items: center; gap: 6px; }
+  .row.check input { width: auto; }
+  select[multiple] { min-height: 90px; }
+  .hint { font-size: 11px; color: #6a7080; margin-top: 4px; }
+  .error { color: #ff6b6b; font-size: 12px; margin-top: 8px; }
+
+  /* --- Upload dropzone --- */
+  .dropzone {
+    border: 2px dashed #333844; border-radius: 10px; padding: 40px 20px;
+    text-align: center; color: #8a8f9a; cursor: pointer; margin-top: 8px;
+  }
+  .dropzone.drag { border-color: #3a5fd9; color: #e8e8e8; background: #1b1e24; }
+  .dropzone input { display: none; }
+
+  /* --- Progress bar --- */
+  .progress { display: flex; gap: 4px; margin-top: 16px; }
+  .pstep { flex: 1; }
+  .pstep .pbar {
+    height: 8px; border-radius: 4px; background: #262a33;
+    overflow: hidden; position: relative;
+  }
+  .pstep .plabel {
+    font-size: 10px; color: #6a7080; margin-top: 4px; text-align: center;
+    text-transform: uppercase; letter-spacing: .03em;
+  }
+  .pstep.done .pbar { background: #2e7d4f; }
+  .pstep.done .plabel { color: #6fd18a; }
+  .pstep.skipped .pbar { background: #3a3f4a; }
+  .pstep.skipped .plabel { color: #8a8f9a; }
+  .pstep.error .pbar { background: #7a2f2f; }
+  .pstep.error .plabel { color: #ff8a8a; }
+  .pstep.active .pbar {
+    background: linear-gradient(90deg, #262a33 0%, #3a5fd9 50%, #262a33 100%);
+    background-size: 200% 100%;
+    animation: pslide 1.1s linear infinite;
+  }
+  .pstep.active .plabel { color: #e8e8e8; }
+  @keyframes pslide {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+  /* En attente d'un plafond d'abonnement — distinct de "active" (qui calcule
+     activement) : un rayé ambre qui respire, pas une progression qui glisse. */
+  .pstep.paused .pbar {
+    background: repeating-linear-gradient(
+      45deg, #4a3a12 0px, #4a3a12 6px, #6b5220 6px, #6b5220 12px
+    );
+    animation: ppulse 1.6s ease-in-out infinite;
+  }
+  .pstep.paused .plabel { color: #e0b34d; }
+  @keyframes ppulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+  }
+
+  /* --- Project page --- */
+  #log {
+    background: #0d0f12; border: 1px solid #2a2e37; border-radius: 6px;
+    padding: 12px; font-family: "Cascadia Code", Consolas, monospace; font-size: 12px;
+    white-space: pre-wrap; height: 280px; overflow-y: auto; line-height: 1.5;
+  }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .gallery img { width: 100%; border-radius: 4px; display: block; background: #0d0f12; }
+  video { width: 100%; border-radius: 6px; background: #000; }
+  .videos { display: flex; flex-direction: column; gap: 14px; }
+  .videos .label { font-size: 12px; color: #8a8f9a; margin-bottom: 4px; }
+  .empty-hint { color: #6a7080; font-size: 13px; }
+
+  /* --- Page Statut --- */
+  .status-grid { display: flex; flex-direction: column; gap: 6px; }
+  .status-row {
+    display: flex; align-items: center; gap: 10px;
+    background: #1b1e24; border: 1px solid #2a2e37; border-radius: 8px;
+    padding: 10px 14px; font-size: 13px;
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dot.up { background: #6fd18a; }
+  .dot.down { background: #5a5f6a; }
+  .dot.pulse { animation: dotpulse 1.4s ease-in-out infinite; }
+  @keyframes dotpulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+  .status-name { font-weight: 600; }
+  .status-port { color: #6a7080; }
+  .status-state { color: #8a8f9a; margin-left: auto; }
+  .status-link { color: #6a9bff; text-decoration: none; font-size: 13px; }
+  .status-link:hover { text-decoration: underline; }
+
+  /* --- Page Miniatures --- */
+  textarea#thumbPrompt {
+    width: 100%; background: #14161a; border: 1px solid #333844;
+    color: #e8e8e8; border-radius: 6px; padding: 8px 10px; font-size: 13px;
+    font-family: inherit; resize: vertical; min-height: 70px;
+  }
+  .thumb-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px; margin-top: 12px;
+  }
+  .thumb-item {
+    position: relative; border-radius: 6px; overflow: hidden;
+    background: #0d0f12; border: 1px solid #2a2e37;
+  }
+  .thumb-item img { width: 100%; display: block; }
+  .thumb-item a.dl {
+    position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,.6);
+    color: #e8e8e8; border-radius: 5px; padding: 3px 8px; font-size: 11px;
+    text-decoration: none; opacity: 0; transition: opacity .1s;
+  }
+  .thumb-item:hover a.dl { opacity: 1; }
+
+  /* --- Page Revue --- */
+  .review-bar {
+    position: sticky; top: 53px; background: #14161a; z-index: 4;
+    display: flex; align-items: center; gap: 14px; padding: 10px 0;
+    border-bottom: 1px solid #2a2e37; margin-bottom: 12px;
+  }
+  .review-bar label { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 13px; color: #b8bcc4; }
+  .review-bar input[type=number] { width: 60px; }
+  .review-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px; margin-bottom: 16px;
+  }
+  .review-item {
+    position: relative; border-radius: 6px; overflow: hidden; cursor: pointer;
+    background: #0d0f12; border: 2px solid transparent;
+  }
+  .review-item img { width: 100%; display: block; }
+  .review-item .idx {
+    position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,.6);
+    color: #e8e8e8; font-size: 10px; padding: 2px 6px; border-radius: 4px;
+  }
+  .review-item.error { border-color: #7a2f2f; }
+  .review-item.flagged { border-color: #e0b34d; }
+  .review-item.flagged::after {
+    content: '✓'; position: absolute; top: 4px; right: 4px; background: #e0b34d;
+    color: #2a1e00; width: 18px; height: 18px; border-radius: 50%; font-size: 11px;
+    font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .flag-editor {
+    background: #1b1e24; border: 1px solid #2a2e37; border-radius: 8px;
+    padding: 12px 14px; margin-bottom: 10px;
+  }
+  .flag-editor .idx-label { font-weight: 600; margin-bottom: 6px; }
+  .flag-editor textarea {
+    width: 100%; background: #14161a; border: 1px solid #333844;
+    color: #e8e8e8; border-radius: 6px; padding: 8px 10px; font-size: 13px;
+    font-family: inherit; resize: vertical; min-height: 50px;
+  }
+  .variant-row {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px; margin-top: 10px;
+  }
+  .variant-item { position: relative; border-radius: 6px; overflow: hidden; background: #0d0f12; border: 1px solid #2a2e37; }
+  .variant-item img { width: 100%; display: block; }
+  .variant-item button {
+    position: absolute; bottom: 6px; left: 6px; right: 6px; margin: 0;
+    font-size: 11px; padding: 5px; opacity: 0; transition: opacity .1s;
+  }
+  .variant-item:hover button { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#/">Projets</a>
+  <a href="#/status">Statut</a>
+  <a href="#/thumbnails">Miniatures</a>
+  <span id="crumb"></span>
+</header>
+
+<main id="app"></main>
+
+<script>
+const API = '';
+let ws = null;
+
+// Ordre et noms fixés par _steps() dans src/pipeline/__main__.py — le
+// pipeline imprime "[nom] …" au début de chaque étape et "[nom] N.N s" (ou
+// "déjà fait — ignoré") à la fin ; on ne fait que reconnaître ces marqueurs,
+// pas de canal dédié côté serveur pour ça.
+const PIPELINE_STEPS = ['tts', 'align', 'segment', 'prompts', 'refs', 'location_refs', 'images', 'render'];
+const STEP_LINE_RE = /^\[(\w+)\] (.+)$/;
+
+function resetProgress() {
+  document.querySelectorAll('#progress .pstep').forEach(el => {
+    el.className = 'pstep';
+    const label = el.querySelector('.plabel');
+    if (label) label.textContent = el.dataset.step;
+  });
+}
+
+function updateProgress(line) {
+  const m = line.match(STEP_LINE_RE);
+  if (!m) return;
+  const [, name, rest] = m;
+  const el = document.querySelector(`#progress .pstep[data-step="${name}"]`);
+  if (!el) return;
+  const label = el.querySelector('.plabel');
+  if (rest === '…') {
+    el.className = 'pstep active';
+    if (label) label.textContent = name;
+  } else if (rest.startsWith('en pause')) {
+    // Plafond d'abonnement Claude atteint (steps/prompts.py) — le run
+    // n'est pas planté, il patiente et reprendra tout seul.
+    el.className = 'pstep paused';
+    if (label) label.textContent = name + ' — pause';
+  } else if (rest.startsWith('déjà fait')) {
+    el.className = 'pstep skipped';
+  } else if (/^\d+\.\d+ s$/.test(rest)) {
+    el.className = 'pstep done';
+  }
+}
+
+function markActiveStepError() {
+  const active = document.querySelector('#progress .pstep.active');
+  if (active) active.className = 'pstep error';
+}
+
+// ---------- routage minimal (hash) ----------
+window.addEventListener('hashchange', renderRoute);
+
+function go(hash) { location.hash = hash; }
+
+let statusPollTimer = null;
+
+async function renderRoute() {
+  // Quelle que soit la destination : la page Statut ne doit pas continuer à
+  // sonder /api/status une fois qu'on l'a quittée.
+  if (statusPollTimer) { clearInterval(statusPollTimer); statusPollTimer = null; }
+
+  const hash = location.hash.replace(/^#\/?/, '');
+  const crumb = document.getElementById('crumb');
+  if (!hash) {
+    crumb.textContent = '';
+    await renderDashboard();
+  } else if (hash === 'status') {
+    // Noms réservés : un projet qui s'appellerait "status" ou "thumbnails"
+    // resterait inatteignable par cette route — acceptable pour un outil
+    // mono-utilisateur.
+    crumb.textContent = '';
+    await renderStatusPage();
+  } else if (hash === 'thumbnails') {
+    crumb.textContent = '';
+    await renderThumbnailsPage();
+  } else if (hash.startsWith('review/')) {
+    const id = hash.slice('review/'.length);
+    crumb.innerHTML = ' <span class="crumb">/</span> ' + id + ' <span class="crumb">/</span> revue';
+    await renderReviewPage(id);
+  } else {
+    crumb.innerHTML = ' <span class="crumb">/</span> ' + hash;
+    await renderProjectPage(hash);
+  }
+}
+
+// ---------- Dashboard ----------
+async function fetchProjects() {
+  const res = await fetch('/api/projects');
+  return res.json();
+}
+
+const STATUS_LABEL = { running: 'En cours', scheduled: 'Programmé', queued: 'Dans la file', done: 'Terminé', idle: 'Inactif' };
+
+function formatScheduledAt(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = (n) => String(n).padStart(2, '0');
+  const today = new Date();
+  const sameDay = d.toDateString() === today.toDateString();
+  const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return sameDay ? `aujourd'hui ${time}` : `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${time}`;
+}
+
+function renderProjectGrid(projects) {
+  const grid = document.getElementById('grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  for (const p of projects) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const badges = [
+      ['script', p.has_script], ['audio', p.has_audio], ['images', p.has_images],
+      ['sample', p.has_sample], ['vidéo', p.has_video],
+    ].map(([label, on]) => `<span class="badge${on ? ' on' : ''}">${label}</span>`).join('');
+    const status = p.status || 'idle';
+    const pillText = status === 'scheduled' && p.scheduled_at
+      ? `Programmé · ${formatScheduledAt(p.scheduled_at)}`
+      : STATUS_LABEL[status] || status;
+    const coverStyle = p.cover_image
+      ? ` style="background-image: url('/media_file/${p.id}/images/${encodeURIComponent(p.cover_image)}')"`
+      : '';
+    const coverInner = p.cover_image ? '' : `<span class="cover-placeholder">${p.id.slice(0, 2).toUpperCase()}</span>`;
+    card.innerHTML = `
+      <div class="cover"${coverStyle}>${coverInner}</div>
+      <span class="status-pill ${status}">${pillText}</span>
+      <button class="del" title="Supprimer" onclick="event.stopPropagation(); deleteProject('${p.id}')">×</button>
+      <div class="card-body">
+        <div class="id">${p.id}</div>
+        <div class="badges">${badges}</div>
+      </div>
+    `;
+    card.onclick = () => go('#/' + p.id);
+    grid.appendChild(card);
+  }
+
+  const newCard = document.createElement('div');
+  newCard.className = 'card new';
+  newCard.textContent = '+ Nouveau projet';
+  newCard.onclick = () => {
+    const id = prompt('Identifiant du projet (lettres, chiffres, - et _) :');
+    if (id && id.trim()) go('#/' + id.trim());
+  };
+  grid.appendChild(newCard);
+
+  return projects.some((p) => ['running', 'scheduled', 'queued'].includes(p.status));
+}
+
+// ---------- File de nuit ----------
+const QSTATUS_LABEL = { pending: 'en attente', running: 'en cours', done: 'terminé', failed: 'échec' };
+
+function fmtDuration(startIso, endIso) {
+  if (!startIso) return '';
+  const ms = (endIso ? new Date(endIso) : new Date()) - new Date(startIso);
+  const min = Math.max(0, Math.round(ms / 60000));
+  return min >= 60 ? `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')}` : `${min} min`;
+}
+
+async function queueApi(path, method = 'POST', body) {
+  const res = await fetch('/api/queue' + path, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    alert(res.status === 404 && path === '' ? "La file n'existe pas sur ce serveur — redémarre le webui." : (data.error || data.detail || 'échec'));
+    return null;
+  }
+  return data;
+}
+
+function renderQueuePanel(q) {
+  const box = document.getElementById('queuePanel');
+  if (!box) return false;
+  const items = q.items || [];
+  const live = items.some((it) => it.status === 'pending' || it.status === 'running');
+  let state;
+  if (!items.length) state = 'vide — ajoute des projets depuis leur page (« Ajouter à la file »)';
+  else if (q.paused) state = 'en pause';
+  else if (q.start_at && new Date(q.start_at) > new Date()) state = `démarre ${formatScheduledAt(q.start_at)}`;
+  else state = live ? 'active' : 'terminée';
+  if (live && q.eta_end) state += ` · fin estimée ${fmtClock(q.eta_end)}`;
+
+  const rows = items.map((it, i) => {
+    const dur = it.started_at ? ` · ${fmtDuration(it.started_at, it.ended_at)}` : '';
+    const prog = it.progress ? ` · images ${it.progress[0]}/${it.progress[1]}` : '';
+    const eta = it.eta_s != null ? ` · reste ~${fmtEta(it.eta_s)}, fin ~${fmtClock(it.eta_end)}` : '';
+    const code = it.status === 'failed' ? ` · ${it.error || 'code ' + it.code}` : '';
+    const opts = it.opts || {};
+    const meta = `${opts.sample ? 'sample' : 'complet'}${opts.force ? ' · force ' + opts.force : ''}${dur}${prog}${eta}${code}`;
+    const canEdit = it.status !== 'running';
+    return `
+      <div class="queue-item">
+        <span class="qstatus ${it.status}">${QSTATUS_LABEL[it.status] || it.status}</span>
+        <span class="qid" onclick="go('#/${it.project_id}')">${it.project_id}</span>
+        <span class="qmeta">${meta}</span>
+        ${it.status === 'pending' ? `<button class="secondary" ${i === 0 ? 'disabled' : ''} onclick="queueMove('${it.id}', -1)">↑</button>
+        <button class="secondary" ${i === items.length - 1 ? 'disabled' : ''} onclick="queueMove('${it.id}', 1)">↓</button>` : ''}
+        ${it.status === 'done' || it.status === 'failed' ? `<button class="secondary" onclick="queueRetry('${it.id}')">Relancer</button>` : ''}
+        ${canEdit ? `<button class="secondary" onclick="queueRemove('${it.id}')">×</button>` : ''}
+      </div>`;
+  }).join('');
+
+  box.innerHTML = `
+    <div class="qhead">
+      <h2>File de nuit <span class="hint" style="display:inline; text-transform:none; letter-spacing:normal">${state}</span></h2>
+      <input type="datetime-local" id="queueWhen">
+      <button onclick="queueStart()">${q.paused ? 'Démarrer la file' : 'Replanifier'}</button>
+      ${q.paused ? '' : '<button class="secondary" onclick="queuePause()">Pause</button>'}
+      ${items.some((it) => it.status === 'done' || it.status === 'failed') ? '<button class="secondary" onclick="queueClear()">Vider les terminés</button>' : ''}
+    </div>
+    <div class="hint" style="margin:6px 0 8px">Les projets s'enchaînent un par un ; un échec n'arrête pas la file. Heure vide = tout de suite. La file survit à un redémarrage du serveur, et le PC ne se met pas en veille tant qu'un run tourne.</div>
+    ${rows}
+  `;
+  return live && !q.paused;
+}
+
+async function refreshQueue() {
+  const res = await fetch('/api/queue');
+  return renderQueuePanel(await res.json());
+}
+async function queueStart() {
+  const when = document.getElementById('queueWhen')?.value || '';
+  if (await queueApi('/start', 'POST', { when })) renderDashboard();
+}
+async function queuePause() { if (await queueApi('/pause')) renderDashboard(); }
+async function queueClear() { if (await queueApi('/clear')) renderDashboard(); }
+async function queueMove(id, delta) { const q = await queueApi(`/${id}/move`, 'POST', { delta }); if (q) renderQueuePanel(q); }
+async function queueRetry(id) { if (await queueApi(`/retry/${id}`)) renderDashboard(); }
+async function queueRemove(id) {
+  if (!confirm('Retirer ce projet de la file ?')) return;
+  if (await queueApi(`/${id}`, 'DELETE')) renderDashboard();
+}
+async function addToQueue(id) {
+  const hint = document.getElementById('scheduleHint');
+  const q = await queueApi('', 'POST', { ...gatherRunOpts(), project_id: id });
+  if (q && hint) {
+    const n = q.items.filter((it) => it.status === 'pending').length;
+    hint.textContent = `Ajouté à la file (${n} en attente) — la démarrer depuis l'accueil.`;
+  }
+}
+
+async function renderDashboard() {
+  const app = document.getElementById('app');
+  const projects = await fetchProjects();
+  app.innerHTML = `
+    <h1>Projets</h1>
+    <p class="sub">${projects.length} projet${projects.length === 1 ? '' : 's'}</p>
+    <div class="queue-panel" id="queuePanel"></div>
+    <div class="grid" id="grid"></div>
+  `;
+  const queueLive = await refreshQueue();
+  const hasLiveState = renderProjectGrid(projects) || queueLive;
+
+  // Un run programmé/en cours change d'état sans action de l'utilisateur ici
+  // (c'est justement le but : lancer et ne plus y penser) — on sonde donc
+  // doucement pour que la carte se mette à jour toute seule, sans jamais
+  // empiler plusieurs minuteurs (un seul global, réutilisé avec la page Statut).
+  if (statusPollTimer) { clearInterval(statusPollTimer); statusPollTimer = null; }
+  if (hasLiveState) {
+    statusPollTimer = setInterval(async () => {
+      if (location.hash.replace(/^#\/?/, '')) { clearInterval(statusPollTimer); statusPollTimer = null; return; }
+      const fresh = await fetchProjects();
+      const qLive = await refreshQueue();
+      const stillLive = renderProjectGrid(fresh) || qLive;
+      if (!stillLive) { clearInterval(statusPollTimer); statusPollTimer = null; }
+    }, 5000);
+  }
+}
+
+async function deleteProject(id) {
+  if (!confirm(`Supprimer définitivement le projet "${id}" ? Irréversible.`)) return;
+  const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+  if (!res.ok) { alert('échec de la suppression'); return; }
+  await renderDashboard();
+}
+
+// ---------- Page Statut ----------
+async function renderStatusPage() {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <h1>Statut</h1>
+    <p class="sub">Serveurs locaux et run en cours — actualisé toutes les 3 s.</p>
+
+    <h2>Serveurs</h2>
+    <div class="status-grid" id="serverStatus"></div>
+
+    <h2>Run en cours</h2>
+    <div id="runStatus"></div>
+  `;
+
+  const refresh = async () => {
+    let status;
+    try {
+      status = await (await fetch('/api/status')).json();
+    } catch {
+      // Le serveur webui lui-même a raison de répondre puisqu'on vient d'y
+      // parler — une erreur ici est transitoire (reload, coupure), pas la
+      // peine d'afficher un état alarmant pour un seul sondage manqué.
+      return;
+    }
+
+    const servers = [
+      ['ComfyUI', 8188, status.servers.comfyui],
+      ['Chatterbox', 8189, status.servers.chatterbox],
+    ];
+    document.getElementById('serverStatus').innerHTML = servers.map(([name, port, up]) => `
+      <div class="status-row">
+        <span class="dot ${up ? 'up' : 'down'}"></span>
+        <span class="status-name">${name}</span>
+        <span class="status-port">:${port}</span>
+        <span class="status-state">${up ? 'actif' : 'arrêté'}</span>
+      </div>
+    `).join('');
+
+    const runBox = document.getElementById('runStatus');
+    if (status.run && !status.run.done) {
+      const id = status.run.project_id;
+      runBox.innerHTML = `
+        <div class="status-row">
+          <span class="dot up pulse"></span>
+          <span class="status-name">${id}</span>
+          <span class="status-state">en cours</span>
+          <a href="#/${id}" class="status-link">Voir →</a>
+        </div>
+      `;
+    } else {
+      runBox.innerHTML = '<p class="empty-hint">Aucun run en cours.</p>';
+    }
+  };
+
+  await refresh();
+  statusPollTimer = setInterval(refresh, 3000);
+}
+
+// ---------- Page Miniatures ----------
+const THUMB_PREFS_KEY = 'pipeline_thumb_prefs_v1';
+let thumbWs = null;
+
+async function renderThumbnailsPage() {
+  const app = document.getElementById('app');
+  const charsRes = await fetch('/api/characters');
+  const characters = await charsRes.json();
+
+  app.innerHTML = `
+    <h1>Miniatures</h1>
+    <p class="sub">Génère plusieurs variantes d'un même prompt, hors du run normal — pour choisir celle qui convient.</p>
+
+    <label>Prompt</label>
+    <textarea id="thumbPrompt" placeholder="bldguy as an exhausted ancient Egyptian slave..."></textarea>
+
+    <div class="row" style="margin-top:10px; gap:16px; align-items:flex-end">
+      <label style="flex:none; width:120px">Nombre
+        <input type="number" id="thumbCount" min="1" max="60" value="30" style="margin-top:4px">
+      </label>
+      <label style="flex:1">Moteur d'images
+        <select id="thumbImageModel" onchange="onThumbImageModelChange(); saveThumbPrefs()" style="margin-top:4px">
+          <option value="sdxl">SDXL (rapide)</option>
+          <option value="flux2">FLUX.2 Klein (lent, cohérence de personnage)</option>
+          <option value="hidream">HiDream-O1 (GPU Runpod, COMFY_URL vers le pod)</option>
+        </select>
+      </label>
+    </div>
+    <div id="thumbFluxFields" style="display:none">
+      <label>Références de personnage</label>
+      <select id="thumbCharacterRefs" multiple onchange="saveThumbPrefs()">
+        ${characters.map(c => `<option value="${c}">${c}</option>`).join('')}
+      </select>
+      <div class="hint">Ctrl/Cmd-clic pour en choisir plusieurs.</div>
+    </div>
+
+    <div class="row" style="gap:8px; margin-top:10px">
+      <button id="thumbRunBtn" onclick="startThumbnails()">Générer</button>
+      <button id="thumbStopBtn" class="secondary" style="display:none" onclick="stopThumbnails()">Arrêter</button>
+    </div>
+    <div id="thumbError" class="error"></div>
+    <p class="hint" id="thumbProgress" style="margin-top:8px"></p>
+
+    <div class="thumb-grid" id="thumbGrid"></div>
+  `;
+
+  document.getElementById('thumbPrompt').addEventListener('change', saveThumbPrefs);
+  document.getElementById('thumbCount').addEventListener('change', saveThumbPrefs);
+  applyThumbPrefs();
+
+  // Reprend un lot déjà en cours (ou affiche le dernier terminé) si on
+  // arrive sur cette page après coup — même logique que la page projet.
+  const status = await (await fetch('/api/thumbnails/status')).json();
+  renderThumbGrid(status.batch_id, status.images);
+  updateThumbProgress(status.images.length, status.count);
+  if (status.active) attachToThumbnails(status.batch_id, status.count);
+}
+
+function onThumbImageModelChange() {
+  const isFlux = ['flux2', 'hidream'].includes(document.getElementById('thumbImageModel').value);
+  document.getElementById('thumbFluxFields').style.display = isFlux ? 'block' : 'none';
+  if (isFlux) selectDefaultThumbCharacterRefs();
+}
+
+function selectDefaultThumbCharacterRefs() {
+  const select = document.getElementById('thumbCharacterRefs');
+  if (!select || select.selectedOptions.length > 0) return;
+  const defaults = ['bldguy_head.png'];
+  Array.from(select.options).forEach(o => { o.selected = defaults.includes(o.value); });
+}
+
+function saveThumbPrefs() {
+  try {
+    const prefs = {
+      prompt: document.getElementById('thumbPrompt')?.value,
+      count: document.getElementById('thumbCount')?.value,
+      imageModel: document.getElementById('thumbImageModel')?.value,
+      characterRefs: Array.from(document.getElementById('thumbCharacterRefs')?.selectedOptions || []).map(o => o.value),
+    };
+    localStorage.setItem(THUMB_PREFS_KEY, JSON.stringify(prefs));
+  } catch {
+    // idem saveRunPrefs() : localStorage indisponible, tant pis.
+  }
+}
+
+function applyThumbPrefs() {
+  let prefs;
+  try {
+    prefs = JSON.parse(localStorage.getItem(THUMB_PREFS_KEY) || '{}');
+  } catch {
+    prefs = {};
+  }
+  if (prefs.prompt) document.getElementById('thumbPrompt').value = prefs.prompt;
+  if (prefs.count) document.getElementById('thumbCount').value = prefs.count;
+  if (prefs.imageModel) document.getElementById('thumbImageModel').value = prefs.imageModel;
+  if (Array.isArray(prefs.characterRefs) && prefs.characterRefs.length) {
+    const sel = document.getElementById('thumbCharacterRefs');
+    if (sel) Array.from(sel.options).forEach(o => { o.selected = prefs.characterRefs.includes(o.value); });
+  }
+  onThumbImageModelChange();
+}
+
+function updateThumbProgress(done, total) {
+  const el = document.getElementById('thumbProgress');
+  if (!el) return;
+  el.textContent = total ? `${done} / ${total} générées` : '';
+}
+
+function renderThumbGrid(batchId, images) {
+  const grid = document.getElementById('thumbGrid');
+  if (!grid || !batchId) return;
+  grid.innerHTML = images.map(f => `
+    <div class="thumb-item">
+      <img src="/thumb_file/${batchId}/${f}" loading="lazy">
+      <a class="dl" href="/thumb_file/${batchId}/${f}" download="${f}">Télécharger</a>
+    </div>
+  `).join('');
+}
+
+async function startThumbnails() {
+  const errEl = document.getElementById('thumbError');
+  errEl.textContent = '';
+  const prompt = document.getElementById('thumbPrompt').value.trim();
+  if (!prompt) { errEl.textContent = 'prompt vide'; return; }
+
+  const opts = {
+    prompt,
+    count: parseInt(document.getElementById('thumbCount').value, 10) || 30,
+    image_model: document.getElementById('thumbImageModel').value,
+    character_refs: Array.from(document.getElementById('thumbCharacterRefs')?.selectedOptions || []).map(o => o.value),
+  };
+
+  const res = await fetch('/api/thumbnails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(opts),
+  });
+  const data = await res.json();
+  if (!res.ok) { errEl.textContent = data.error || 'échec du lancement'; return; }
+
+  document.getElementById('thumbGrid').innerHTML = '';
+  updateThumbProgress(0, opts.count);
+  attachToThumbnails(data.batch_id, data.count);
+}
+
+async function stopThumbnails() {
+  if (!confirm('Arrêter la génération en cours ?')) return;
+  await fetch('/api/thumbnails/stop', { method: 'POST' });
+}
+
+function attachToThumbnails(batchId, total) {
+  const runBtn = document.getElementById('thumbRunBtn');
+  const stopBtn = document.getElementById('thumbStopBtn');
+  runBtn.disabled = true;
+  stopBtn.style.display = 'inline-block';
+
+  const images = [];
+  let finished = false;
+
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  thumbWs = new WebSocket(`${proto}//${location.host}/ws/thumbnails`);
+  thumbWs.onmessage = (ev) => {
+    const msg = JSON.parse(ev.data);
+    if (msg.type === 'image') {
+      images.push(msg.file);
+      renderThumbGrid(batchId, images);
+      updateThumbProgress(images.length, total);
+    } else if (msg.type === 'error') {
+      document.getElementById('thumbError').textContent = `scène ${msg.index}: ${msg.message}`;
+    } else if (msg.type === 'done') {
+      finished = true;
+      runBtn.disabled = false;
+      stopBtn.style.display = 'none';
+    }
+  };
+  thumbWs.onclose = () => {
+    if (finished) return;
+    // Coupure avant "done" : le lot continue côté serveur (même principe
+    // que les runs), on se recontente de se rattacher.
+    setTimeout(() => attachToThumbnails(batchId, total), 2000);
+  };
+}
+
+// ---------- Page Revue ----------
+// État module-global comme thumbWs/ws : une seule page de revue ouverte à la
+// fois côté client, cohérent avec _review_state côté serveur (un seul lot).
+let reviewWs = null;
+let reviewData = [];              // [{index, image_path, error_code, prompt, text}]
+let reviewFlagged = new Set();    // indices de scène marqués
+let reviewEditedPrompts = {};     // index -> texte du prompt (édité ou repris tel quel)
+let reviewVariants = {};          // index -> [nom de fichier par variante, dans l'ordre]
+let reviewBatchId = null;
+let reviewProjectId = null;
+
+async function renderReviewPage(id) {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <h1>${id} — revue &amp; régénération</h1>
+    <p class="sub">Clique une image pour la marquer à régénérer. Corrige le prompt si le contenu (costume, décor…) est faux, pas seulement si le rendu est raté, puis lance la génération d'alternatives.</p>
+
+    <div class="review-bar">
+      <button id="reviewRegenBtn" onclick="startReviewRegen('${id}')" disabled>Régénérer les images marquées (0)</button>
+      <button id="reviewStopBtn" class="secondary" style="display:none" onclick="stopReviewRegen()">Arrêter</button>
+      <label>Variantes par scène <input type="number" id="reviewVariantCount" min="1" max="8" value="4"></label>
+    </div>
+    <div id="reviewError" class="error"></div>
+
+    <div class="review-grid" id="reviewGrid"></div>
+    <div id="reviewEditors"></div>
+  `;
+
+  reviewProjectId = id;
+  reviewBatchId = null;
+  reviewFlagged = new Set();
+  reviewEditedPrompts = {};
+  reviewVariants = {};
+
+  const res = await fetch(`/api/projects/${id}/review`);
+  reviewData = await res.json();
+
+  // État de revue persisté (review.json) : les scènes marquées et les prompts
+  // réécrits survivent à un rechargement de l'onglet. Marquer 40 images est
+  // un travail long, le perdre sur un F5 ne doit pas arriver.
+  try {
+    const saved = await (await fetch(`/api/projects/${id}/review/flags`)).json();
+    reviewFlagged = new Set(saved.flagged || []);
+    reviewEditedPrompts = saved.prompts || {};
+  } catch { /* serveur muet : on repart d'une revue vide, sans casser la page */ }
+
+  renderReviewGrid();
+  renderReviewEditors();
+
+  // Une régénération lancée avant un rechargement de cette page continue
+  // côté serveur (voir _execute_review) — on s'y rattache plutôt que d'en
+  // proposer une nouvelle, même logique que attachToRun/attachToThumbnails.
+  const status = await (await fetch('/api/review/status')).json();
+  if (status.active && status.project_id === id) {
+    reviewBatchId = status.batch_id;
+    reviewVariants = status.images || {};
+    for (const idxStr of Object.keys(reviewVariants)) reviewFlagged.add(parseInt(idxStr, 10));
+    renderReviewGrid();
+    renderReviewEditors();
+    attachToReview(status.variants);
+  }
+}
+
+function renderReviewGrid() {
+  const grid = document.getElementById('reviewGrid');
+  if (!grid) return;
+  if (!reviewData.length) {
+    grid.innerHTML = '<div class="empty-hint">Pas encore d\'images.</div>';
+  } else {
+    grid.innerHTML = reviewData.map(s => `
+      <div class="review-item ${reviewFlagged.has(s.index) ? 'flagged' : ''} ${s.error_code ? 'error' : ''}"
+           onclick="toggleReviewFlag(${s.index})" title="${s.error_code ? 'erreur : ' + s.error_code : ''}">
+        <img src="/media_file/${reviewProjectId}/${s.image_path}?v=${s._v || 0}" loading="lazy">
+        <span class="idx">${s.index}</span>
+      </div>
+    `).join('');
+  }
+  const btn = document.getElementById('reviewRegenBtn');
+  if (btn) {
+    btn.textContent = `Régénérer les images marquées (${reviewFlagged.size})`;
+    btn.disabled = reviewFlagged.size === 0;
+  }
+}
+
+let reviewSaveTimer = null;
+
+// Écriture différée : un `oninput` sur les textareas déclencherait sinon une
+// requête par caractère frappé.
+function saveReviewState() {
+  if (!reviewProjectId) return;
+  clearTimeout(reviewSaveTimer);
+  reviewSaveTimer = setTimeout(() => {
+    fetch(`/api/projects/${reviewProjectId}/review/flags`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        flagged: Array.from(reviewFlagged),
+        prompts: reviewEditedPrompts,
+      }),
+    }).catch(() => { /* hors ligne : l'état reste en mémoire, on réessaiera */ });
+  }, 400);
+}
+
+function toggleReviewFlag(index) {
+  if (reviewFlagged.has(index)) {
+    reviewFlagged.delete(index);
+  } else {
+    reviewFlagged.add(index);
+    if (!(index in reviewEditedPrompts)) {
+      const scene = reviewData.find(s => s.index === index);
+      reviewEditedPrompts[index] = scene ? scene.prompt : '';
+    }
+  }
+  renderReviewGrid();
+  renderReviewEditors();
+  saveReviewState();
+}
+
+function renderReviewEditors() {
+  const box = document.getElementById('reviewEditors');
+  if (!box) return;
+  const indices = Array.from(reviewFlagged).sort((a, b) => a - b);
+  box.innerHTML = indices.map(idx => {
+    const variants = reviewVariants[idx] || [];
+    return `
+      <div class="flag-editor">
+        <div class="idx-label">Scène ${idx}</div>
+        <textarea oninput="reviewEditedPrompts[${idx}] = this.value; saveReviewState()">${reviewEditedPrompts[idx] || ''}</textarea>
+        <div class="variant-row">
+          ${variants.map((f, v) => f ? `
+            <div class="variant-item">
+              <img src="/review_file/${reviewProjectId}/${reviewBatchId}/${f}" loading="lazy">
+              <button onclick="applyReviewVariant(${idx}, ${v})">Utiliser celle-ci</button>
+            </div>
+          ` : '').join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function startReviewRegen(id) {
+  const errEl = document.getElementById('reviewError');
+  errEl.textContent = '';
+
+  const jobs = Array.from(reviewFlagged).map(index => ({
+    index, prompt: (reviewEditedPrompts[index] || '').trim(),
+  }));
+  if (jobs.some(j => !j.prompt)) {
+    errEl.textContent = 'prompt vide pour au moins une scène marquée';
+    return;
+  }
+  const variants = parseInt(document.getElementById('reviewVariantCount').value, 10) || 4;
+
+  // Même moteur/références que le dernier run configuré dans le navigateur
+  // (RUN_PREFS_KEY) — une variante candidate à remplacer une image doit
+  // rester cohérente avec le reste du projet, pas repartir sur SDXL par défaut.
+  let prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem(RUN_PREFS_KEY) || '{}'); } catch {}
+
+  const res = await fetch(`/api/projects/${id}/review/regenerate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jobs, variants,
+      image_model: prefs.imageModel || 'flux2',
+      character_refs: prefs.characterRefs || [],
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) { errEl.textContent = data.error || 'échec du lancement'; return; }
+
+  reviewBatchId = data.batch_id;
+  reviewVariants = {};
+  renderReviewEditors();
+  attachToReview(data.variants);
+}
+
+async function stopReviewRegen() {
+  if (!confirm('Arrêter la régénération en cours ?')) return;
+  await fetch('/api/review/stop', { method: 'POST' });
+}
+
+function attachToReview(total) {
+  const regenBtn = document.getElementById('reviewRegenBtn');
+  const stopBtn = document.getElementById('reviewStopBtn');
+  if (regenBtn) regenBtn.disabled = true;
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+
+  let finished = false;
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  reviewWs = new WebSocket(`${proto}//${location.host}/ws/review/${reviewBatchId}`);
+  reviewWs.onmessage = (ev) => {
+    const msg = JSON.parse(ev.data);
+    if (msg.type === 'image') {
+      const arr = reviewVariants[msg.scene_index] || (reviewVariants[msg.scene_index] = []);
+      arr[msg.variant] = msg.file;
+      renderReviewEditors();
+    } else if (msg.type === 'error') {
+      document.getElementById('reviewError').textContent = `scène ${msg.scene_index}: ${msg.message}`;
+    } else if (msg.type === 'done') {
+      finished = true;
+      if (regenBtn) regenBtn.disabled = reviewFlagged.size === 0;
+      if (stopBtn) stopBtn.style.display = 'none';
+    }
+  };
+  reviewWs.onclose = () => {
+    if (finished) return;
+    setTimeout(() => attachToReview(total), 2000);
+  };
+}
+
+async function applyReviewVariant(index, variant) {
+  const res = await fetch(`/api/projects/${reviewProjectId}/review/apply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ index, variant, batch_id: reviewBatchId, prompt: reviewEditedPrompts[index] || '' }),
+  });
+  const data = await res.json();
+  if (!res.ok) { document.getElementById('reviewError').textContent = data.error || 'échec'; return; }
+
+  // Reflète le choix dans la grille sans tout recharger — cache-busté pour
+  // ne pas resservir l'ancienne image depuis le cache du navigateur.
+  const scene = reviewData.find(s => s.index === index);
+  if (scene) { scene._v = Date.now(); scene.error_code = null; }
+  reviewFlagged.delete(index);
+  delete reviewVariants[index];
+  renderReviewGrid();
+  renderReviewEditors();
+}
+
+// ---------- Page projet ----------
+async function renderProjectPage(id) {
+  const app = document.getElementById('app');
+  const projects = await fetchProjects();
+  const existing = projects.find(p => p.id === id);
+
+  if (!existing) {
+    renderUploadPage(id);
+    return;
+  }
+  renderRunPage(existing);
+}
+
+function renderUploadPage(id) {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <h1>${id}</h1>
+    <p class="sub">Projet pas encore créé — dépose le script pour le créer.</p>
+    <label>Langue</label>
+    <select id="newLang" style="max-width:200px"><option value="en">en</option><option value="fr">fr</option></select>
+    <div class="dropzone" id="dz">
+      <div>Dépose un fichier .txt ici, ou clique pour en choisir un</div>
+      <input type="file" id="fileInput" accept=".txt">
+    </div>
+    <div id="uploadError" class="error"></div>
+  `;
+  const dz = document.getElementById('dz');
+  const input = document.getElementById('fileInput');
+  dz.onclick = () => input.click();
+  dz.ondragover = (e) => { e.preventDefault(); dz.classList.add('drag'); };
+  dz.ondragleave = () => dz.classList.remove('drag');
+  dz.ondrop = (e) => {
+    e.preventDefault(); dz.classList.remove('drag');
+    if (e.dataTransfer.files.length) uploadScript(id, e.dataTransfer.files[0]);
+  };
+  input.onchange = () => { if (input.files.length) uploadScript(id, input.files[0]); };
+}
+
+async function uploadScript(id, file) {
+  const errEl = document.getElementById('uploadError');
+  errEl.textContent = '';
+  const lang = document.getElementById('newLang').value;
+  const form = new FormData();
+  form.append('id', id);
+  form.append('lang', lang);
+  form.append('script', file);
+  const res = await fetch('/api/projects', { method: 'POST', body: form });
+  const data = await res.json();
+  if (!res.ok) { errEl.textContent = data.error || 'échec'; return; }
+  await renderProjectPage(id);
+}
+
+async function renderRunPage(project) {
+  const app = document.getElementById('app');
+  const charsRes = await fetch('/api/characters');
+  const characters = await charsRes.json();
+
+  app.innerHTML = `
+    <h1>${project.id}</h1>
+
+    <h2>Configuration</h2>
+    <label>Voix (TTS)</label>
+    <select id="ttsProvider" onchange="onTtsChange(); saveRunPrefs()">
+      <option value="piper">Piper (local, gratuit, qualité correcte)</option>
+      <option value="chatterbox">Chatterbox (local, serveur requis, anglais seul)</option>
+      <option value="fishaudio">Fish Audio (API, payant, multilingue + clonage)</option>
+    </select>
+    <div id="fishFields" style="display:none">
+      <label>Clé API Fish Audio</label>
+      <input type="password" id="fishApiKey" placeholder="vide = FISH_API_KEY depuis .env">
+      <div class="hint">fish.audio/app/api-keys — solde à créditer séparément sur fish.audio/app/developers. Laisser vide pour utiliser la clé de .env, si présente. Jamais mémorisée dans le navigateur.</div>
+      <label>ID de la voix</label>
+      <input type="text" id="fishVoiceId" placeholder="vide = FISH_VOICE_ID depuis .env" onchange="saveRunPrefs()">
+    </div>
+
+    <label style="margin-top:14px">Moteur d'images</label>
+    <select id="imageModel" onchange="onImageModelChange(); saveRunPrefs()">
+      <option value="sdxl">SDXL (rapide, adhérence au prompt faible)</option>
+      <option value="flux2">FLUX.2 Klein (lent, cohérence de personnage)</option>
+          <option value="hidream">HiDream-O1 (GPU Runpod, COMFY_URL vers le pod)</option>
+    </select>
+    <div id="fluxFields" style="display:none">
+      <label>Références de personnage</label>
+      <select id="characterRefs" multiple onchange="saveRunPrefs()">
+        ${characters.map(c => `<option value="${c}">${c}</option>`).join('')}
+      </select>
+      <div class="hint">Ctrl/Cmd-clic pour en choisir plusieurs. ~64s/image — vérifier ComfyUI lancé.</div>
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <label class="row check"><input type="checkbox" id="optSample" checked onchange="saveRunPrefs()"> --sample (3×30s)</label>
+      <label class="row check"><input type="checkbox" id="optDraft" onchange="saveRunPrefs()"> --draft (basse résolution)</label>
+    </div>
+
+    <label style="margin-top:10px">Vitesse du montage <span class="hint" style="display:inline">(1.0 = vitesse d'origine ; la changer suffit à refaire le montage, sans toucher aux images)</span></label>
+    <select id="optSpeed" onchange="saveRunPrefs()">
+      ${[["1.0","1.0 — vitesse d'origine"],["1.1","1.1"],["1.15","1.15"],["1.2","1.2"],["1.25","1.25 — défaut"],["1.3","1.3"],["1.4","1.4"]]
+        .map(([v,l]) => `<option value="${v}">${l}</option>`).join('')}
+    </select>
+
+    <label style="margin-top:10px">Forcer depuis <span class="hint" style="display:inline">(régénère cette étape et toutes celles qui suivent, même si déjà faites)</span></label>
+    <select id="optForce">
+      <option value="">— aucun forçage —</option>
+      ${PIPELINE_STEPS.map(s => `<option value="${s}">${s}</option>`).join('')}
+    </select>
+
+    <div class="row" style="gap:8px">
+      <button id="runBtn" onclick="runPipeline('${project.id}')">Lancer</button>
+      <button id="stopBtn" class="secondary" style="display:none" onclick="stopRun('${project.id}')">Arrêter</button>
+    </div>
+
+    <div class="row" id="scheduleRow" style="gap:8px; margin-top:8px; align-items:center">
+      <input type="datetime-local" id="scheduleWhen">
+      <button id="scheduleBtn" class="secondary" onclick="scheduleRun('${project.id}')">Programmer</button>
+      <button id="cancelScheduleBtn" class="secondary" style="display:none" onclick="cancelSchedule('${project.id}')">Annuler la programmation</button>
+      <button class="secondary" onclick="addToQueue('${project.id}')" title="Enchaîné avec les autres projets de la file de nuit, avec les options ci-dessus">Ajouter à la file</button>
+      <span class="hint" id="scheduleHint" style="display:inline"></span>
+    </div>
+
+    <div class="progress" id="progress">
+      ${PIPELINE_STEPS.map(s => `
+        <div class="pstep" data-step="${s}">
+          <div class="pbar"></div>
+          <div class="plabel">${s}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="hint" id="etaLine" style="margin-top:6px; min-height:16px"></div>
+
+    <h2>Journal</h2>
+    <div id="log"></div>
+
+    <h2>Vidéo</h2>
+    <div class="videos" id="videoBox"><div class="empty-hint">Rien à lire pour l'instant.</div></div>
+
+    <h2>Images <a href="#review/${project.id}" style="text-transform:none; font-weight:400; letter-spacing:normal; font-size:11px; margin-left:8px">→ revue &amp; régénération</a></h2>
+    <div class="gallery" id="gallery"></div>
+  `;
+
+  applyRunPrefs();
+  refreshGallery(project.id);
+  refreshVideo(project.id);
+  applyScheduleState(project);
+
+  // Un run peut avoir été lancé depuis un autre onglet, ou continuer depuis
+  // avant un rechargement de cette page — il tourne indépendamment de toute
+  // connexion, donc on s'y rattache plutôt que de proposer d'en relancer un.
+  const statusRes = await fetch(`/api/projects/${project.id}/run`);
+  const status = await statusRes.json();
+  if (status.active) attachToRun(project.id);
+}
+
+// Reflète l'état "scheduled" déjà connu de /api/projects (calculé côté
+// serveur) sur les contrôles de programmation, sans requête supplémentaire.
+function applyScheduleState(project) {
+  const whenInput = document.getElementById('scheduleWhen');
+  const scheduleBtn = document.getElementById('scheduleBtn');
+  const cancelBtn = document.getElementById('cancelScheduleBtn');
+  const hint = document.getElementById('scheduleHint');
+  if (project.status === 'scheduled' && project.scheduled_at) {
+    whenInput.disabled = true;
+    scheduleBtn.style.display = 'none';
+    cancelBtn.style.display = 'inline-block';
+    hint.textContent = `Programmé pour ${formatScheduledAt(project.scheduled_at)}.`;
+  } else {
+    whenInput.disabled = false;
+    scheduleBtn.style.display = 'inline-block';
+    cancelBtn.style.display = 'none';
+    hint.textContent = '';
+  }
+}
+
+function gatherRunOpts() {
+  return {
+    sample: document.getElementById('optSample').checked,
+    draft: document.getElementById('optDraft').checked,
+    force: document.getElementById('optForce')?.value || '',
+    speed: parseFloat(document.getElementById('optSpeed')?.value || '1.25'),
+    tts_provider: document.getElementById('ttsProvider').value,
+    fish_api_key: document.getElementById('fishApiKey')?.value || '',
+    fish_voice_id: document.getElementById('fishVoiceId')?.value || '',
+    image_model: document.getElementById('imageModel').value,
+    character_refs: Array.from(document.getElementById('characterRefs')?.selectedOptions || []).map(o => o.value),
+  };
+}
+
+async function scheduleRun(id) {
+  const whenInput = document.getElementById('scheduleWhen');
+  const hint = document.getElementById('scheduleHint');
+  if (!whenInput.value) { hint.textContent = 'Choisis une date/heure.'; return; }
+
+  const opts = { ...gatherRunOpts(), when: whenInput.value };
+  const res = await fetch(`/api/projects/${id}/schedule`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(opts),
+  });
+  const data = await res.json();
+  if (!res.ok) { hint.textContent = data.error || 'échec de la programmation'; return; }
+  applyScheduleState({ status: 'scheduled', scheduled_at: data.when });
+}
+
+async function cancelSchedule(id) {
+  if (!confirm('Annuler la génération programmée ?')) return;
+  await fetch(`/api/projects/${id}/schedule`, { method: 'DELETE' });
+  applyScheduleState({ status: 'idle' });
+}
+
+// ---------- Préférences de run (localStorage, pas de backend — juste un
+// confort par navigateur, jamais partagé ni lu par le serveur). La clé API
+// Fish Audio n'y figure jamais : .env reste la seule source de valeur
+// sensible persistée, localStorage n'est pas chiffré. ----------
+const RUN_PREFS_KEY = 'pipeline_run_prefs_v1';
+
+function saveRunPrefs() {
+  try {
+    const prefs = {
+      ttsProvider: document.getElementById('ttsProvider')?.value,
+      fishVoiceId: document.getElementById('fishVoiceId')?.value,
+      imageModel: document.getElementById('imageModel')?.value,
+      characterRefs: Array.from(document.getElementById('characterRefs')?.selectedOptions || []).map(o => o.value),
+      optSample: document.getElementById('optSample')?.checked,
+      optDraft: document.getElementById('optDraft')?.checked,
+      speed: document.getElementById('optSpeed')?.value,
+    };
+    localStorage.setItem(RUN_PREFS_KEY, JSON.stringify(prefs));
+  } catch {
+    // localStorage indisponible (navigation privée, quota) — tant pis, pas
+    // de valeur mémorisée cette fois, la page reste utilisable sans.
+  }
+}
+
+function applyRunPrefs() {
+  let prefs;
+  try {
+    prefs = JSON.parse(localStorage.getItem(RUN_PREFS_KEY) || '{}');
+  } catch {
+    prefs = {};
+  }
+
+  const ttsSelect = document.getElementById('ttsProvider');
+  if (prefs.ttsProvider && ttsSelect) ttsSelect.value = prefs.ttsProvider;
+  const voiceId = document.getElementById('fishVoiceId');
+  if (prefs.fishVoiceId && voiceId) voiceId.value = prefs.fishVoiceId;
+  const imgSelect = document.getElementById('imageModel');
+  if (prefs.imageModel && imgSelect) imgSelect.value = prefs.imageModel;
+  const speedSelect = document.getElementById('optSpeed');
+  if (speedSelect) speedSelect.value = prefs.speed || '1.25';
+  if (Array.isArray(prefs.characterRefs) && prefs.characterRefs.length) {
+    const refsSelect = document.getElementById('characterRefs');
+    if (refsSelect) {
+      Array.from(refsSelect.options).forEach(o => {
+        o.selected = prefs.characterRefs.includes(o.value);
+      });
+    }
+  }
+  const sample = document.getElementById('optSample');
+  if (typeof prefs.optSample === 'boolean' && sample) sample.checked = prefs.optSample;
+  const draft = document.getElementById('optDraft');
+  if (typeof prefs.optDraft === 'boolean' && draft) draft.checked = prefs.optDraft;
+
+  // Répercute sur l'affichage (champs Fish Audio / références visibles ou
+  // non) — selectDefaultCharacterRefs() ne présélectionne que si rien n'est
+  // déjà choisi, donc ça n'écrase pas ce qu'on vient de restaurer ci-dessus.
+  onTtsChange();
+  onImageModelChange();
+}
+
+function onTtsChange() {
+  document.getElementById('fishFields').style.display =
+    document.getElementById('ttsProvider').value === 'fishaudio' ? 'block' : 'none';
+}
+function onImageModelChange() {
+  const isFlux = ['flux2', 'hidream'].includes(document.getElementById('imageModel').value);
+  document.getElementById('fluxFields').style.display = isFlux ? 'block' : 'none';
+  if (isFlux) selectDefaultCharacterRefs();
+}
+
+function selectDefaultCharacterRefs() {
+  // Klein ne doit jamais tourner sans référence de personnage : sans ça,
+  // providers/local.py continue en silence, juste sans cohérence de
+  // personnage (aucune erreur pour le signaler). bldguy_head.png (tête
+  // seule, sans costume) est le repli documenté dans RUN.md — présélectionné
+  // par défaut, sauf si l'utilisateur a déjà fait un choix différent. Sur un
+  // script à paliers, l'étape `refs` prend le relais avec une référence par
+  // palier ; ceci ne sert que pour les scènes hors palier ou les projets
+  // sans NIVEAU:.
+  const select = document.getElementById('characterRefs');
+  if (!select || select.selectedOptions.length > 0) return;
+  const defaults = ['bldguy_head.png'];
+  Array.from(select.options).forEach(o => { o.selected = defaults.includes(o.value); });
+}
+
+async function refreshGallery(id) {
+  const res = await fetch(`/api/projects/${id}/images`);
+  const names = await res.json();
+  const gal = document.getElementById('gallery');
+  if (!gal) return;
+  gal.innerHTML = names.length
+    ? names.map(n => `<img src="/media_file/${id}/images/${n}">`).join('')
+    : '<div class="empty-hint">Pas encore d\'images.</div>';
+}
+
+async function refreshVideo(id) {
+  const box = document.getElementById('videoBox');
+  if (!box) return;
+  let html = '';
+  for (const [name, label] of [['out.sample.mp4', 'Échantillon (--sample)'], ['out.mp4', 'Vidéo complète']]) {
+    const url = `/media_file/${id}/${name}`;
+    const head = await fetch(url, { method: 'HEAD' });
+    if (head.ok) {
+      html += `<div><div class="label">${label}</div><video controls src="${url}"></video></div>`;
+    }
+  }
+  box.innerHTML = html || '<div class="empty-hint">Rien à lire pour l\'instant — lance un run.</div>';
+}
+
+function log(line) {
+  const el = document.getElementById('log');
+  if (!el) return;
+  if (line.startsWith('[progress] ')) return;
+  el.textContent += line + '\n';
+  el.scrollTop = el.scrollHeight;
+  updateProgress(line);
+}
+
+async function runPipeline(id) {
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+
+  const opts = gatherRunOpts();
+
+  // Lancé côté serveur, détaché de cette requête : une fois la réponse
+  // reçue, le run tourne même si on ferme l'onglet tout de suite après.
+  const res = await fetch(`/api/projects/${id}/run`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(opts),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    document.getElementById('log').textContent = 'ERREUR: ' + (data.error || 'échec du lancement') + '\n';
+    btn.disabled = false;
+    return;
+  }
+  attachToRun(id);
+}
+
+async function stopRun(id) {
+  if (!confirm('Arrêter le run en cours ?')) return;
+  await fetch(`/api/projects/${id}/stop`, { method: 'POST' });
+}
+
+// Temps restant du run en cours — sondé toutes les 10 s tant que la page est
+// rattachée au run (l'estimation vit côté serveur, voir _estimate).
+let etaTimer = null;
+
+function fmtEta(sec) {
+  if (sec == null) return '';
+  const min = Math.round(sec / 60);
+  if (min < 1) return 'moins d\'une minute';
+  return min >= 60 ? `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')}` : `${min} min`;
+}
+
+function fmtClock(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = (n) => String(n).padStart(2, '0');
+  const sameDay = d.toDateString() === new Date().toDateString();
+  return `${sameDay ? '' : pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + ' '}${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+async function refreshEta(id) {
+  const el = document.getElementById('etaLine');
+  if (!el) { stopEta(); return; }
+  try {
+    const res = await fetch(`/api/projects/${id}/eta`);
+    const e = await res.json();
+    if (!e.active || e.remaining_s == null) { el.textContent = ''; return; }
+    const end = new Date(Date.now() + e.remaining_s * 1000).toISOString();
+    const imgs = e.images ? ` · images ${e.images[0]}/${e.images[1]}` : '';
+    el.textContent = `Temps restant estimé : ~${fmtEta(e.remaining_s)} (fin vers ${fmtClock(end)})${imgs}`;
+  } catch { /* serveur momentanément injoignable — on retentera */ }
+}
+
+function startEta(id) {
+  stopEta();
+  refreshEta(id);
+  etaTimer = setInterval(() => refreshEta(id), 10000);
+}
+
+function stopEta() {
+  if (etaTimer) { clearInterval(etaTimer); etaTimer = null; }
+}
+
+function attachToRun(id) {
+  startEta(id);
+  const btn = document.getElementById('runBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  btn.disabled = true;
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  document.getElementById('log').textContent = '';
+  resetProgress();
+
+  // Le journal vient intégralement du serveur (`state.log` rejoué depuis le
+  // début) à chaque (re)connexion — idempotent, donc une reconnexion après
+  // coupure peut vider et rebâtir la vue sans jamais dupliquer de lignes.
+  let finished = false;
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${proto}//${location.host}/ws/run/${id}`);
+  ws.onmessage = (ev) => {
+    const msg = JSON.parse(ev.data);
+    if (msg.type === 'log') { log(msg.line); }
+    else if (msg.type === 'error') { log('ERREUR: ' + msg.line); markActiveStepError(); }
+    else if (msg.type === 'done') {
+      finished = true;
+      stopEta();
+      const etaEl = document.getElementById('etaLine');
+      if (etaEl) etaEl.textContent = '';
+      log(`— terminé, code ${msg.code} —`);
+      if (msg.code !== 0) markActiveStepError();
+      btn.disabled = false;
+      if (stopBtn) stopBtn.style.display = 'none';
+      refreshGallery(id);
+      refreshVideo(id);
+    }
+  };
+  ws.onclose = () => {
+    // Coupure avant "done" : le run continue en arrière-plan côté serveur,
+    // seule la vue a besoin de se rattacher — pas de réactiver le bouton.
+    if (finished) return;
+    log('[connexion au journal perdue — le run continue en arrière-plan, reconnexion…]');
+    setTimeout(() => attachToRun(id), 2000);
+  };
+}
+
+renderRoute();
+</script>
+</body>
+</html>

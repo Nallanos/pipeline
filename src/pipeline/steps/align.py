@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import os
 import wave
+from pathlib import Path
 
 from ..alignment import WhisperWord, check_invariant_a, check_plausible, reconcile
 from ..language import for_project
-from ..project import Options, Project
+from ..project import Options, Project, safe_wav_frames
 
 MODEL = "small"
 DRAFT_MODEL = "tiny"  # pour itérer ; jamais pour la production
@@ -19,7 +20,8 @@ DRAFT_MODEL = "tiny"  # pour itérer ; jamais pour la production
 
 def _audio_ms(path: str) -> int:
     with wave.open(path, "rb") as wav:
-        return round(wav.getnframes() * 1000 / wav.getframerate())
+        rate = wav.getframerate()
+    return round(safe_wav_frames(Path(path)) * 1000 / rate)
 
 
 def run(project: Project, opts: Options) -> None:

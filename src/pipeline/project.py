@@ -9,6 +9,7 @@ système et il ne faut pas en introduire.
 from __future__ import annotations
 
 import re
+import wave
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,6 +18,27 @@ PROJECTS_DIR = ROOT / "projects"
 CONFIG_DIR = ROOT / "config"
 PROMPTS_DIR = ROOT / "prompts"
 MODELS_DIR = ROOT / "models"
+
+
+def safe_wav_frames(path: Path) -> int:
+    """Nombre de frames d'un WAV, borné par la taille réelle du fichier.
+
+    `wave` fait confiance à `nframes` déclaré dans l'en-tête sans jamais le
+    confronter à la taille du fichier. Vu deux fois en pratique avec l'API
+    Fish Audio (`steps/align.py`, `steps/tts.py`) et une troisième en la
+    corrigeant à moitié (`steps/render.py::_card_audio`, 04/09) : un en-tête
+    déclarant nframes proche de 2**31 (dépassement d'entier 32 bits côté
+    serveur) sur un fichier bien plus court — sans ce plafond, tout ce qui
+    consomme cette durée (segmentation, ffmpeg -d=...) part sur des heures
+    au lieu de secondes. Centralisé ici après l'avoir corrigé séparément
+    deux fois : la duplication avait déjà laissé passer l'oubli une fois.
+    """
+    with wave.open(str(path), "rb") as wav:
+        frames = wav.getnframes()
+        frame_bytes = wav.getsampwidth() * wav.getnchannels()
+    if not frame_bytes:
+        return frames
+    return min(frames, path.stat().st_size // frame_bytes)
 
 
 @dataclass(frozen=True)
@@ -59,8 +81,51 @@ class Project:
         return self.dir / "scenes.json"
 
     @property
+    def levels(self) -> Path:
+        """Cartons de palier ("Niveau 1 : ..."), extraits du script à l'import
+        par `clean_source()`. Absent si le script n'a pas de marqueur `NIVEAU:`
+        — pas toutes les vidéos ne sont un format « paliers »."""
+        return self.dir / "levels.json"
+
+    @property
+    def section_bible(self) -> Path:
+        """Descriptif costume/décor par palier, dérivé de `levels.json` à
+        l'étape prompts (SPEC : voir `section_bible.py`). Artefact de
+        diagnostic, pas suivi par le contrat d'étape — recalculé à chaque
+        exécution réelle de `prompts.run()`. Absent si `levels.json` l'est."""
+        return self.dir / "section_bible.json"
+
+    @property
     def images(self) -> Path:
         return self.dir / "images"
+
+    @property
+    def section_refs(self) -> Path:
+        """Une image de référence par palier (`NIVEAU:`), costume de la
+        section sur fond neutre — voir `steps/refs.py`. `section_refs.json`
+        fait foi (`{"refs": {}}` pour un projet sans paliers)."""
+        return self.dir / "section_refs"
+
+    @property
+    def location_bible(self) -> Path:
+        """Lieux récurrents détectés par palier (SPEC : voir
+        `location_bible.py`). Artefact de diagnostic, comme `section_bible`
+        — recalculé à chaque exécution réelle de `prompts.run()`."""
+        return self.dir / "location_bible.json"
+
+    @property
+    def cast_bible(self) -> Path:
+        """Personnages secondaires récurrents et leur description figée
+        (voir `cast_bible.py`). Calculé une fois à l'étape prompts, relu en
+        reprise, avec ou sans paliers."""
+        return self.dir / "cast_bible.json"
+
+    @property
+    def location_refs(self) -> Path:
+        """Un plan d'établissement SANS personnage par lieu récurrent — voir
+        `steps/location_refs.py`. `location_refs.json` fait foi (`{"refs":
+        {}}` si aucun lieu n'a franchi le seuil de récurrence)."""
+        return self.dir / "location_refs"
 
     @property
     def segments(self) -> Path:
@@ -91,20 +156,47 @@ class Options:
     sample: bool = False
 
 
-def clean_source(text: str) -> tuple[str, int]:
-    """Ôte les horodatages d'un script importé. Retourne (texte, nb ôtés).
+# Une ligne à elle seule, écrite à la main dans le script importé, avant le
+# paragraphe où commence un nouveau palier :
+#
+#     NIVEAU: Komono / Chūgen
+#
+# `render.py` insère un carton statique portant ce texte juste avant la scène
+# qui commence à cet endroit. Majuscule volontaire : improbable qu'une phrase
+# de narration commence une ligne par "NIVEAU:", donc pas d'ambiguïté à lever.
+_LEVEL_LINE = re.compile(r"^NIVEAU\s*:\s*(.+?)\s*$")
 
-    Les scripts viennent souvent d'un export de transcription et portent un
-    `[00:00:00]` par ligne. `normalize()` ne fait que compresser les espaces :
-    sans ce nettoyage, le TTS lirait les horodatages à voix haute, et l'invariant
-    A les traiterait comme des mots à part entière.
+
+def clean_source(text: str) -> tuple[str, int, list[tuple[int, str]]]:
+    """Ôte les horodatages et les marqueurs `NIVEAU:` d'un script importé.
+
+    Retourne (texte nettoyé, nb horodatages ôtés, [(index de mot, libellé)]) —
+    l'index de mot pointe le premier mot du palier dans le texte nettoyé, dans
+    le même référentiel que `Scene.word_start` (SPEC : les deux comptent sur
+    `normalize(texte).split()`), pour que `render.py` puisse retrouver la
+    scène en face sans dépendre d'un LLM ni d'un matching approximatif.
+
+    Les horodatages sont ôtés d'abord : un marqueur `NIVEAU:` sur une ligne
+    qui en portait un doit rester détecté après leur suppression.
 
     Appliqué **à l'import**, pas à la lecture : `script.txt` dans le projet est
-    toujours de la prose, et `normalize()` reste la seule définition de la
-    normalisation.
+    toujours de la prose (plus de marqueurs), et `normalize()` reste la seule
+    définition de la normalisation.
     """
-    cleaned, count = re.subn(r"\[\d{1,2}:\d{2}(?::\d{2})?(?:[.,]\d+)?\]\s*", "", text)
-    return cleaned, count
+    text, stripped = re.subn(r"\[\d{1,2}:\d{2}(?::\d{2})?(?:[.,]\d+)?\]\s*", "", text)
+
+    kept_lines: list[str] = []
+    levels: list[tuple[int, str]] = []
+    word_count = 0
+    for line in text.split("\n"):
+        match = _LEVEL_LINE.match(line.strip())
+        if match:
+            levels.append((word_count, match.group(1)))
+            continue
+        kept_lines.append(line)
+        word_count += len(line.split())
+
+    return "\n".join(kept_lines), stripped, levels
 
 
 def normalize(text: str) -> str:

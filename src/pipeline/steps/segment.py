@@ -20,9 +20,17 @@ from ..language import for_project
 from ..project import Options, Project, write_atomic
 from ..scenes import Scene
 
-TARGET_MS = 4500
-MIN_MS = 3000
-MAX_MS = 6000
+# Cadence mesurée sur les trois vidéos de référence (détection de plans ffmpeg,
+# une image par plan) : 495 plans / 27,3 min, 505 / 29,7 min, 545 / 27,6 min,
+# soit 3,3 / 3,5 / 3,0 s par plan — moyenne 3,3 s, et un écart faible entre les
+# trois, donc une règle de montage voulue et non un artefact.
+# MAX_MS reste un garde-fou, pas un levier de rythme : entre 4800 et 6000 il ne
+# change ni le nombre de scènes ni leur durée moyenne, il borne seulement la
+# coupe forcée quand aucune frontière naturelle n'existe dans la fenêtre. Trop
+# bas (4400) l'invariant de test_duree_des_scenes_bornee saute sur 12 scènes.
+TARGET_MS = 3300
+MIN_MS = 2200
+MAX_MS = 5000
 WINDOW_MS = 1500
 MIN_SCORE = 0.3
 

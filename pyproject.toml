@@ -10,6 +10,7 @@ dependencies = [
     "pillow>=11.0",
     "pyyaml>=6.0",
     "httpx>=0.27",
+    "ormsgpack>=1.5",
 ]
 
 [project.optional-dependencies]
@@ -18,6 +19,14 @@ dev = [
     "ruff>=0.7",
     "mypy>=1.13",
     "types-PyYAML",
+]
+# Panneau de controle web (webui/) -- pas une dependance du pipeline lui-meme,
+# CLI-only par ailleurs. A part pour ne pas l'imposer a une install headless.
+webui = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "python-multipart>=0.0.9",
+    "python-dotenv>=1.0",
 ]
 
 [build-system]
